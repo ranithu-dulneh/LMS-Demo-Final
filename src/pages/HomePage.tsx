@@ -17,9 +17,6 @@ const HomePage: React.FC = () => {
           <Link to="/login" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
             Get Started <ArrowRight size={20} />
           </Link>
-          <Link to="/student/dashboard" className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 px-8 py-4 rounded-full font-bold text-lg transition-all shadow-sm flex items-center gap-2">
-            View Demo
-          </Link>
         </div>
       </section>
 
