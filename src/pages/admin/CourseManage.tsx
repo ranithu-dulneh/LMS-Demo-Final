@@ -60,16 +60,13 @@ const CourseManage: React.FC = () => {
 
       if (error) {
         console.error("Error fetching lessons:", error);
-        // Fallback mock data
-        setLessons([
-          { id: 1, course_id: Number(id), title: 'Introduction to Accounting', youtube_link: 'https://youtube.com/watch?v=mock1', is_free: true, price: 0 },
-          { id: 2, course_id: Number(id), title: 'Ledger Entries', youtube_link: 'https://youtube.com/watch?v=mock2', is_free: false, price: 1500 },
-        ]);
+        alert(`Error fetching lessons: ${error.message}`);
       } else {
         setLessons(data || []);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Unexpected error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -106,8 +103,10 @@ const CourseManage: React.FC = () => {
 
       if (!error) {
          setLessons(lessons.map(l => l.id === editingLesson.id ? { ...l, ...formData } : l));
+         setIsModalOpen(false);
       } else {
-         setLessons(lessons.map(l => l.id === editingLesson.id ? { ...l, ...formData } : l)); // optimistic
+         console.error("Error updating lesson", error);
+         alert(`Failed to update lesson: ${error.message}`);
       }
     } else {
       // Add new
@@ -119,11 +118,12 @@ const CourseManage: React.FC = () => {
 
       if (!error && data) {
          setLessons([...lessons, data[0]]);
+         setIsModalOpen(false);
       } else {
-         setLessons([...lessons, { id: Date.now(), ...payload }]); // optimistic
+         console.error("Error inserting lesson", error);
+         alert(`Failed to insert lesson: ${error.message}`);
       }
     }
-    setIsModalOpen(false);
   };
 
   return (

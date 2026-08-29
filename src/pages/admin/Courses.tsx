@@ -35,16 +35,13 @@ const AdminCourses: React.FC = () => {
 
       if (error) {
         console.error("Error fetching courses:", error);
-        // Fallback mock data if table doesn't exist yet for smooth testing
-        setCourses([
-          { id: 1, title: 'A/L Accounting Unit 1', lessons: 11, status: 'Active', exam_year: '2025' },
-          { id: 2, title: 'A/L Accounting Unit 2', lessons: 12, status: 'Active', exam_year: '2026' }
-        ]);
+        alert(`Error fetching courses: ${error.message}`);
       } else {
         setCourses(data || []);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Unexpected error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -75,9 +72,10 @@ const AdminCourses: React.FC = () => {
 
       if (!error) {
          setCourses(courses.map(c => c.id === editingCourse.id ? { ...c, ...formData } : c));
+         setIsModalOpen(false);
       } else {
          console.error("Error updating", error);
-         setCourses(courses.map(c => c.id === editingCourse.id ? { ...c, ...formData } : c)); // optimistic update for demo
+         alert(`Failed to update course: ${error.message}`);
       }
     } else {
       // Add new
@@ -88,12 +86,12 @@ const AdminCourses: React.FC = () => {
 
       if (!error && data) {
          setCourses([data[0], ...courses]);
+         setIsModalOpen(false);
       } else {
          console.error("Error inserting", error);
-         setCourses([{ id: Date.now(), ...formData }, ...courses]); // optimistic update for demo
+         alert(`Failed to insert course: ${error.message}`);
       }
     }
-    setIsModalOpen(false);
   };
 
   const filteredCourses = filterYear === 'All'

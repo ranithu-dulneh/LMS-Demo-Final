@@ -36,14 +36,9 @@ const StudentDashboard: React.FC = () => {
 
       if (error) {
         console.error("Error fetching student courses:", error);
-        // Mock fallback if DB is not ready
-        setCourses([
-          { id: 1, title: 'A/L Accounting - Revision 2024', progress: 65, lessons: 24, completedLessons: 15, exam_year: '2024', status: 'Active', thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
-          { id: 2, title: 'Theory Class - Unit 05', progress: 30, lessons: 10, completedLessons: 3, exam_year: '2025', status: 'Active', thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
-          { id: 3, title: 'Past Paper Discussion 2023', progress: 100, lessons: 5, completedLessons: 5, exam_year: '2024', status: 'Active', thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' }
-        ]);
+        alert(`Failed to load courses: ${error.message}`);
       } else {
-        // Map DB data and add mock progress/thumbnails since they might not be in the base table yet
+        // Map DB data and add mock progress/thumbnails since they are not in DB yet
         const mappedData = data.map((c: any) => ({
           ...c,
           progress: Math.floor(Math.random() * 100),
@@ -51,8 +46,9 @@ const StudentDashboard: React.FC = () => {
         }));
         setCourses(mappedData);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Unexpected error: ${err.message}`);
     } finally {
       setLoading(false);
     }
