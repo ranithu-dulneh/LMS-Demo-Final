@@ -8,6 +8,7 @@ import CourseView from './pages/student/CourseView';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminStudents from './pages/admin/Students';
 import AdminCourses from './pages/admin/Courses';
+import CourseManage from './pages/admin/CourseManage';
 import AdminSchedules from './pages/admin/Schedules';
 import AdminMaterials from './pages/admin/Materials';
 import AdminSettings from './pages/admin/Settings';
@@ -31,6 +32,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<AdminStudents />} />
           <Route path="courses" element={<AdminCourses />} />
+          <Route path="courses/:id" element={<CourseManage />} />
           <Route path="schedules" element={<AdminSchedules />} />
             <Route path="materials" element={<AdminMaterials />} />
             <Route path="settings" element={<AdminSettings />} />

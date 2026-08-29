@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Video, Plus, X, Filter } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -157,9 +158,12 @@ const AdminCourses: React.FC = () => {
                   >
                     Edit
                   </button>
-                  <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-medium transition-colors">
+                  <Link
+                    to={`/admin/courses/${course.id}`}
+                    className="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
                     Manage
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))
