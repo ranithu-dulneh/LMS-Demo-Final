@@ -80,7 +80,7 @@ const CourseView: React.FC = () => {
         {/* Video Player Section */}
         {activeLesson ? (
           <div className="shadow-xl rounded-2xl bg-black overflow-hidden">
-            <CustomVideoPlayer url={activeLesson.youtube_link} />
+            <CustomVideoPlayer key={activeLesson.id} url={activeLesson.youtube_link} />
           </div>
         ) : (
           <div className="bg-gray-100 rounded-2xl aspect-video flex flex-col items-center justify-center text-gray-500">
