@@ -17,6 +17,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
   const [showControls, setShowControls] = useState(true);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -27,6 +28,13 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
   if (sanitizedUrl && !sanitizedUrl.startsWith('http')) {
     sanitizedUrl = `https://${sanitizedUrl}`;
   }
+
+  // Reset states when URL changes
+  useEffect(() => {
+    setIsReady(false);
+    setHasError(false);
+    setPlaying(false);
+  }, [sanitizedUrl]);
 
   // Handle Double Tap Seeking
   const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' | null }>({ time: 0, side: null });
@@ -152,12 +160,15 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
             url={sanitizedUrl}
             width="100%"
             height="100%"
-            playing={playing}
+            playing={playing && isReady}
             volume={volume}
             muted={muted}
             playbackRate={playbackRate}
             onProgress={handleProgress}
             onDuration={setDuration}
+            onReady={() => {
+              setIsReady(true);
+            }}
             onError={(e: any) => {
               console.error("ReactPlayer Error:", e);
               setHasError(true);
@@ -173,12 +184,20 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
                   showinfo: 0,
                   iv_load_policy: 3,
                   fs: 0,
-                  origin: window.location.origin
+                  // Remove dynamic origin for better compatibility
+                  origin: undefined
                 }
               }
             }}
             style={{ pointerEvents: 'none' }} // Prevent standard YT interactions
           />
+
+          {!isReady && !hasError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black z-40">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+              <p className="text-sm font-medium">Loading video...</p>
+            </div>
+          )}
 
           {/* Tap/Click Overlay for interaction */}
           <div
