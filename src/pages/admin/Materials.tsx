@@ -119,7 +119,7 @@ const AdminMaterials: React.FC = () => {
     setUploading(true);
     try {
       // 1. Get the session (from auth) to pass the token
-      await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
 
       // 2. Upload file via Edge Function to Google Drive
       const formData = new FormData();
@@ -127,6 +127,9 @@ const AdminMaterials: React.FC = () => {
 
       const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-to-drive', {
         body: formData,
+        headers: session ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : undefined,
       });
 
       if (uploadError || !uploadData || !uploadData.webViewLink) {
@@ -150,6 +153,9 @@ const AdminMaterials: React.FC = () => {
       // Reset form and close modal
       closeModal();
 
+      // Fallback: manually fetch materials
+      fetchMaterials();
+
     } catch (err: any) {
       console.error("Upload error:", err);
       alert(`Upload failed: ${err.message}`);
@@ -164,6 +170,9 @@ const AdminMaterials: React.FC = () => {
     try {
       const { error } = await supabase.from('materials').delete().eq('id', id);
       if (error) throw error;
+
+      // Fallback: manually fetch materials
+      fetchMaterials();
     } catch (err) {
       console.error("Delete error:", err);
       alert("Failed to delete material.");

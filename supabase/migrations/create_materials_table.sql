@@ -13,6 +13,9 @@ CREATE TABLE public.materials (
 -- Enable RLS
 ALTER TABLE public.materials ENABLE ROW LEVEL SECURITY;
 
+-- Enable Realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE public.materials;
+
 -- Allow public read access for materials (anyone can view materials metadata)
 CREATE POLICY "Enable read access for all users" ON public.materials FOR SELECT USING (true);
 

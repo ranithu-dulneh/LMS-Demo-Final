@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.112.4'
 
 // Basic CORS headers
 const corsHeaders = {
@@ -13,6 +14,23 @@ serve(async (req) => {
   }
 
   try {
+    // 0. Verify Auth
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('Missing Authorization header')
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    if (userError || !user) {
+      throw new Error('Unauthorized')
+    }
+
     // 1. Get the Service Account JSON from Supabase Secrets
     const serviceAccountJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON')
     if (!serviceAccountJson) {
@@ -36,6 +54,9 @@ serve(async (req) => {
       typ: 'JWT',
     }
     const headerBase64 = btoa(JSON.stringify(header))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
 
     // Create JWT Claim Set
     const iat = Math.floor(Date.now() / 1000)
@@ -48,6 +69,9 @@ serve(async (req) => {
       iat: iat,
     }
     const claimSetBase64 = btoa(JSON.stringify(claimSet))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
 
     const signatureInput = `${headerBase64}.${claimSetBase64}`
 
@@ -173,7 +197,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
 
-  } catch (error) {
+  } catch (error: any) {
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
