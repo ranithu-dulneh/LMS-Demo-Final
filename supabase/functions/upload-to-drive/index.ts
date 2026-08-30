@@ -20,6 +20,12 @@ serve(async (req) => {
     }
 
     const credentials = JSON.parse(serviceAccountJson)
+
+    // Fix double-escaped newlines in private key
+    if (credentials.private_key) {
+      credentials.private_key = credentials.private_key.replace(/\\n/g, '\n')
+    }
+
     const folderId = Deno.env.get('GOOGLE_DRIVE_FOLDER_ID') || '' // Optional, but recommended
 
     // 2. Parse the multipart/form-data request to get the file
@@ -173,7 +179,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
 
-  } catch (error) {
+  } catch (error: any) {
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
