@@ -42,6 +42,9 @@ serve(async (req) => {
       typ: 'JWT',
     }
     const headerBase64 = btoa(JSON.stringify(header))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
 
     // Create JWT Claim Set
     const iat = Math.floor(Date.now() / 1000)
@@ -54,6 +57,9 @@ serve(async (req) => {
       iat: iat,
     }
     const claimSetBase64 = btoa(JSON.stringify(claimSet))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
 
     const signatureInput = `${headerBase64}.${claimSetBase64}`
 
@@ -61,10 +67,10 @@ serve(async (req) => {
     // We need to parse the PEM private key for Web Crypto API
     const pemHeader = "-----BEGIN PRIVATE KEY-----"
     const pemFooter = "-----END PRIVATE KEY-----"
-    const pemContents = credentials.private_key.substring(
-      pemHeader.length,
-      credentials.private_key.length - pemFooter.length - 1
-    ).replace(/\n/g, "")
+    const pemContents = credentials.private_key
+      .replace(pemHeader, '')
+      .replace(pemFooter, '')
+      .replace(/\s/g, '')
 
     const binaryDerString = atob(pemContents)
     const binaryDer = new Uint8Array(binaryDerString.length)
