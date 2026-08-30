@@ -119,7 +119,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
   };
 
   // Create a component that TypeScript won't complain about
-  const PlayerComponent = ReactPlayer as any;
+  const PlayerComponent = (ReactPlayer as any).default || ReactPlayer as any;
 
   if (!sanitizedUrl) {
     return (
@@ -160,7 +160,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
             url={sanitizedUrl}
             width="100%"
             height="100%"
-            playing={playing && isReady}
+            playing={playing}
             volume={volume}
             muted={muted}
             playbackRate={playbackRate}
@@ -184,12 +184,11 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
                   showinfo: 0,
                   iv_load_policy: 3,
                   fs: 0,
-                  // Remove dynamic origin for better compatibility
-                  origin: undefined
+                  // IMPORTANT: Must provide origin for YouTube API to work reliably!
+                  origin: window.location.origin
                 }
               }
             }}
-            style={{ pointerEvents: 'none' }} // Prevent standard YT interactions
           />
 
           {!isReady && !hasError && (
@@ -217,9 +216,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
 
           {/* Controls Bar */}
           <div
-            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-16 px-4 pb-4 z-30 transition-opacity duration-300 ${
-              showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-16 px-4 pb-4 z-30 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           >
             {/* Timeline */}
             <div className="flex items-center gap-3 mb-4 group/timeline cursor-pointer">
