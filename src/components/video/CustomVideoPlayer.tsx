@@ -25,8 +25,31 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
 
   // Sanitize URL: react-player requires full URLs (http/https) to detect YouTube correctly
   let sanitizedUrl = url || '';
-  if (sanitizedUrl && !sanitizedUrl.startsWith('http')) {
-    sanitizedUrl = `https://${sanitizedUrl}`;
+  if (sanitizedUrl) {
+    if (!sanitizedUrl.startsWith('http')) {
+      sanitizedUrl = `https://${sanitizedUrl}`;
+    }
+
+    // Clean YouTube URLs to remove problematic query parameters (like list, index)
+    try {
+      const urlObj = new URL(sanitizedUrl);
+      if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
+        let videoId = '';
+        if (urlObj.hostname.includes('youtu.be')) {
+          videoId = urlObj.pathname.slice(1);
+        } else if (urlObj.pathname.includes('/embed/')) {
+          videoId = urlObj.pathname.split('/embed/')[1];
+        } else {
+          videoId = urlObj.searchParams.get('v') || '';
+        }
+
+        if (videoId) {
+          sanitizedUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        }
+      }
+    } catch (e) {
+      // Ignore URL parsing errors and fall back to the original sanitizedUrl
+    }
   }
 
   // Reset states when URL changes
