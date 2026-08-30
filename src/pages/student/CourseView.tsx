@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, FileText, MessageSquare, Download, Video, Lock, Play } from 'lucide-react';
+import { ChevronLeft, FileText, MessageSquare, Download, Video, Lock, Play, ChevronDown, ChevronUp } from 'lucide-react';
 import CustomVideoPlayer from '../../components/video/CustomVideoPlayer';
 import { supabase } from '../../lib/supabase';
 
 interface Lesson {
   id: number;
   course_id: number;
+  title: string;
+  created_at: string;
+}
+
+interface Session {
+  id: number;
+  lesson_id: number;
   title: string;
   youtube_link: string;
   is_free: boolean;
@@ -17,31 +24,69 @@ interface Lesson {
 const CourseView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [course, setCourse] = useState<any>(null);
+
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [sessions, setSessions] = useState<Record<number, Session[]>>({}); // lesson_id -> Session[]
+
   const [loading, setLoading] = useState(true);
-  const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
+
+  const [expandedLessons, setExpandedLessons] = useState<number[]>([]);
+  const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState<'materials' | 'discussion'>('materials');
 
   useEffect(() => {
-    fetchCourseAndLessons();
+    fetchCourseAndData();
   }, [id]);
 
-  const fetchCourseAndLessons = async () => {
+  const fetchCourseAndData = async () => {
     if (!id) return;
     setLoading(true);
     try {
-      const [courseRes, lessonsRes] = await Promise.all([
-        supabase.from('courses').select('*').eq('id', id).single(),
-        supabase.from('lessons').select('*').eq('course_id', id).order('id', { ascending: true })
-      ]);
+      const { data: courseData, error: courseError } = await supabase.from('courses').select('*').eq('id', id).single();
+      if (courseError) throw courseError;
+      setCourse(courseData);
 
-      if (courseRes.error) throw courseRes.error;
-      if (lessonsRes.error) throw lessonsRes.error;
+      const { data: lessonsData, error: lessonsError } = await supabase.from('lessons').select('*').eq('course_id', id).order('id', { ascending: true });
+      if (lessonsError) throw lessonsError;
 
-      setCourse(courseRes.data);
-      setLessons(lessonsRes.data || []);
-      if (lessonsRes.data && lessonsRes.data.length > 0) {
-        setActiveLesson(lessonsRes.data[0]);
+      const loadedLessons = lessonsData || [];
+      setLessons(loadedLessons);
+
+      if (loadedLessons.length > 0) {
+        // Fetch sessions for all these lessons
+        const lessonIds = loadedLessons.map((l: Lesson) => l.id);
+        const { data: sessionsData, error: sessionsError } = await supabase
+          .from('sessions')
+          .select('*')
+          .in('lesson_id', lessonIds)
+          .order('id', { ascending: true });
+
+        if (sessionsError) throw sessionsError;
+
+        const sessionsMap: Record<number, Session[]> = {};
+        let firstSessionFound: Session | null = null;
+
+        if (sessionsData) {
+          sessionsData.forEach((session: Session) => {
+            if (!sessionsMap[session.lesson_id]) {
+              sessionsMap[session.lesson_id] = [];
+            }
+            sessionsMap[session.lesson_id].push(session);
+
+            if (!firstSessionFound) {
+              firstSessionFound = session;
+            }
+          });
+        }
+        setSessions(sessionsMap);
+
+        if (loadedLessons[0]) {
+          setExpandedLessons([loadedLessons[0].id]);
+        }
+
+        if (firstSessionFound) {
+          setActiveSession(firstSessionFound);
+        }
       }
     } catch (err: any) {
       console.error("Error fetching course data:", err);
@@ -49,6 +94,12 @@ const CourseView: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleLesson = (lessonId: number) => {
+    setExpandedLessons(prev =>
+      prev.includes(lessonId) ? prev.filter(id => id !== lessonId) : [...prev, lessonId]
+    );
   };
 
   // Mock materials/discussions for now until we have tables for them
@@ -65,6 +116,8 @@ const CourseView: React.FC = () => {
     return <div className="py-10 text-center text-red-500">Course not found.</div>;
   }
 
+  const activeLessonForSession = activeSession ? lessons.find(l => l.id === activeSession.lesson_id) : null;
+
   return (
     <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
       {/* Main Content (Video & Details) */}
@@ -73,24 +126,26 @@ const CourseView: React.FC = () => {
           <Link to="/student/dashboard" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 mb-4 transition-colors">
             <ChevronLeft size={16} className="mr-1" /> Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">{activeLesson ? activeLesson.title : course.title}</h1>
-          <p className="text-gray-500 mt-1">{course.title}</p>
+          <h1 className="text-3xl font-bold text-gray-900">{activeSession ? activeSession.title : course.title}</h1>
+          <p className="text-gray-500 mt-1">
+            {activeLessonForSession ? `${course.title} - ${activeLessonForSession.title}` : course.title}
+          </p>
         </div>
 
         {/* Video Player Section */}
-        {activeLesson ? (
+        {activeSession ? (
           <div className="shadow-xl rounded-2xl bg-black overflow-hidden">
-            <CustomVideoPlayer key={activeLesson.id} url={activeLesson.youtube_link} />
+            <CustomVideoPlayer key={activeSession.id} url={activeSession.youtube_link} />
           </div>
         ) : (
           <div className="bg-gray-100 rounded-2xl aspect-video flex flex-col items-center justify-center text-gray-500">
             <Video size={48} className="mb-4 opacity-50" />
-            <p>No lessons available for this course yet.</p>
+            <p>No sessions available for this course yet.</p>
           </div>
         )}
 
         {/* Course Info & Tabs */}
-        {activeLesson && (
+        {activeSession && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Tabs */}
             <div className="flex border-b border-gray-200 px-6">
@@ -145,7 +200,7 @@ const CourseView: React.FC = () => {
       <div className="w-full lg:w-80 flex-shrink-0">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden sticky top-6">
           <div className="p-4 border-b border-gray-100 bg-gray-50">
-            <h3 className="font-bold text-gray-900">Course Lessons</h3>
+            <h3 className="font-bold text-gray-900">Course Content</h3>
             <p className="text-sm text-gray-500">{lessons.length} lessons</p>
           </div>
           <div className="max-h-[600px] overflow-y-auto">
@@ -153,43 +208,72 @@ const CourseView: React.FC = () => {
               <div className="p-4 text-center text-gray-500 text-sm">No lessons found.</div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {lessons.map((lesson, index) => (
-                  <button
-                    key={lesson.id}
-                    onClick={() => setActiveLesson(lesson)}
-                    className={`w-full text-left p-4 flex gap-3 transition-colors ${
-                      activeLesson?.id === lesson.id ? 'bg-blue-50' : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="mt-1 flex-shrink-0">
-                      {activeLesson?.id === lesson.id ? (
-                        <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                          <Play size={12} className="ml-0.5" />
+                {lessons.map((lesson, lessonIndex) => (
+                  <div key={lesson.id} className="bg-white">
+                    <button
+                      onClick={() => toggleLesson(lesson.id)}
+                      className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                          {lessonIndex + 1}
                         </div>
+                        <h4 className="font-medium text-gray-900 text-sm">{lesson.title}</h4>
+                      </div>
+                      {expandedLessons.includes(lesson.id) ? (
+                        <ChevronUp size={16} className="text-gray-400" />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-bold">
-                          {index + 1}
-                        </div>
+                        <ChevronDown size={16} className="text-gray-400" />
                       )}
-                    </div>
-                    <div>
-                      <h4 className={`font-medium text-sm ${activeLesson?.id === lesson.id ? 'text-blue-900' : 'text-gray-900'}`}>
-                        {lesson.title}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        {!lesson.is_free && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
-                            <Lock size={10} /> Paid
-                          </span>
-                        )}
-                        {lesson.is_free && (
-                          <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                            Free
-                          </span>
+                    </button>
+
+                    {expandedLessons.includes(lesson.id) && (
+                      <div className="bg-gray-50 border-t border-gray-100">
+                        {!sessions[lesson.id] || sessions[lesson.id].length === 0 ? (
+                          <div className="p-4 text-xs text-gray-500 text-center">No sessions available.</div>
+                        ) : (
+                          sessions[lesson.id].map((session, sessionIndex) => (
+                            <button
+                              key={session.id}
+                              onClick={() => setActiveSession(session)}
+                              className={`w-full text-left py-3 pl-12 pr-4 flex items-start gap-3 transition-colors ${
+                                activeSession?.id === session.id ? 'bg-blue-50 border-l-4 border-blue-600 pl-11' : 'hover:bg-gray-100 border-l-4 border-transparent'
+                              }`}
+                            >
+                              <div className="mt-0.5 flex-shrink-0">
+                                {activeSession?.id === session.id ? (
+                                  <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                                    <Play size={10} className="ml-0.5" />
+                                  </div>
+                                ) : (
+                                  <div className="w-5 h-5 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-[10px] font-bold">
+                                    {sessionIndex + 1}
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <h5 className={`font-medium text-xs ${activeSession?.id === session.id ? 'text-blue-900' : 'text-gray-700'}`}>
+                                  {session.title}
+                                </h5>
+                                <div className="flex items-center gap-2 mt-1">
+                                  {!session.is_free && (
+                                    <span className="flex items-center gap-1 text-[9px] font-bold text-orange-600 bg-orange-50 px-1 py-0.5 rounded">
+                                      <Lock size={8} /> Paid
+                                    </span>
+                                  )}
+                                  {session.is_free && (
+                                    <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1 py-0.5 rounded">
+                                      Free
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                          ))
                         )}
                       </div>
-                    </div>
-                  </button>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
