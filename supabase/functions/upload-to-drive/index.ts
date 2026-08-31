@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { encode as encodeBase64Url } from "https://deno.land/std@0.168.0/encoding/base64url.ts"
 
 
 
@@ -84,13 +85,7 @@ serve(async (req) => {
 
     }
 
-    const headerBase64 = btoa(JSON.stringify(header))
-
-      .replace(/\+/g, '-')
-
-      .replace(/\//g, '_')
-
-      .replace(/=+$/, '')
+    const headerBase64 = encodeBase64Url(new TextEncoder().encode(JSON.stringify(header)).buffer)
 
 
 
@@ -114,13 +109,7 @@ serve(async (req) => {
 
     }
 
-    const claimSetBase64 = btoa(JSON.stringify(claimSet))
-
-      .replace(/\+/g, '-')
-
-      .replace(/\//g, '_')
-
-      .replace(/=+$/, '')
+    const claimSetBase64 = encodeBase64Url(new TextEncoder().encode(JSON.stringify(claimSet)).buffer)
 
 
 
@@ -194,13 +183,7 @@ serve(async (req) => {
 
     // Convert signature to base64url
 
-    const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
-
-      .replace(/\+/g, '-')
-
-      .replace(/\//g, '_')
-
-      .replace(/=+$/, '')
+    const signatureBase64 = encodeBase64Url(signature)
 
 
 
