@@ -81,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('user_id', userId);
 
       if (count !== null && count >= maxDevices) {
-        setDeviceError(`Device limit reached. You can only use ${maxDevices} device(s).`);
+        setDeviceError(`Device limit reached (${maxDevices}). Please Ask the admin for an extra device if you need to log in here.`);
         await supabase.auth.signOut();
         return false;
       }
