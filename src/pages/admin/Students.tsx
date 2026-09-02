@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Filter, CheckCircle, BookOpen, X } from 'lucide-react';
+import { Users, Search, Filter, CheckCircle, BookOpen, X, MonitorSmartphone } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { format } from 'date-fns';
 
@@ -9,13 +10,18 @@ interface StudentProfile {
   full_name: string;
   is_approved: boolean;
   created_at: string;
-  email?: string;
+  max_devices: number;
+  enrollment_count?: number;
 }
 
 const AdminStudents: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const filterParam = searchParams.get('filter');
+
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<string>(filterParam || 'All');
 
   useEffect(() => {
     fetchStudents();
@@ -31,19 +37,22 @@ const AdminStudents: React.FC = () => {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      // Note: We need email which might be tricky if not stored in profile.
-      // Usually, admin creates a secure function to fetch auth users + profiles,
-      // but for this UI we'll fetch profiles and optionally join if we made a view.
-      // We will just show the profile data for now.
       const { data, error } = await supabase
         .from('student_profiles')
-        .select('*')
+        .select(`
+          *,
+          enrollments (count)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching students:', error);
       } else {
-        setStudents(data || []);
+        const mappedData = (data || []).map(student => ({
+          ...student,
+          enrollment_count: student.enrollments[0]?.count || 0
+        }));
+        setStudents(mappedData);
       }
     } catch (err) {
       console.error(err);
@@ -78,6 +87,23 @@ const AdminStudents: React.FC = () => {
     }
   };
 
+  const updateDeviceLimit = async (id: string, currentLimit: number) => {
+    try {
+      const newLimit = currentLimit === 1 ? 2 : 1;
+      const { error } = await supabase
+        .from('student_profiles')
+        .update({ max_devices: newLimit })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setStudents(students.map(s => s.id === id ? { ...s, max_devices: newLimit } : s));
+      alert(`Device limit updated to ${newLimit}.`);
+    } catch (error: any) {
+      alert(`Failed to update device limit: ${error.message}`);
+    }
+  };
+
   const openAssignModal = (student: StudentProfile) => {
     setSelectedStudent(student);
     fetchAssignableCourses();
@@ -108,10 +134,18 @@ const AdminStudents: React.FC = () => {
     }
   };
 
-  const filteredStudents = students.filter(s =>
-    s.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.student_id?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredStudents = students.filter(s => {
+    const matchesSearch = s.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          s.student_id?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (activeFilter === 'Approved') return s.is_approved;
+    if (activeFilter === 'Pending') return !s.is_approved;
+    if (activeFilter === 'Unassigned') return s.is_approved && s.enrollment_count === 0;
+
+    return true; // 'All'
+  });
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 relative">
@@ -130,9 +164,19 @@ const AdminStudents: React.FC = () => {
               className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700">
-            <Filter size={16} /> Filter
-          </button>
+          <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-2">
+            <Filter size={16} className="text-gray-500" />
+            <select
+              value={activeFilter}
+              onChange={(e) => setActiveFilter(e.target.value)}
+              className="bg-transparent border-none outline-none py-2 text-sm font-medium text-gray-700"
+            >
+              <option value="All">All Students</option>
+              <option value="Approved">Approved</option>
+              <option value="Pending">Pending</option>
+              <option value="Unassigned">Unassigned (0 Courses)</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -142,42 +186,62 @@ const AdminStudents: React.FC = () => {
             <tr className="border-b border-gray-200 text-sm text-gray-500">
               <th className="py-3 font-medium">Student ID</th>
               <th className="py-3 font-medium">Name</th>
-              <th className="py-3 font-medium">Joined Date</th>
-              <th className="py-3 font-medium">Status</th>
+              <th className="py-3 font-medium">Status & Devices</th>
               <th className="py-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="text-sm divide-y divide-gray-100">
             {loading ? (
-               <tr><td colSpan={5} className="py-8 text-center text-gray-500">Loading students...</td></tr>
+               <tr><td colSpan={4} className="py-8 text-center text-gray-500">Loading students...</td></tr>
             ) : filteredStudents.length === 0 ? (
-               <tr><td colSpan={5} className="py-8 text-center text-gray-500">No students found.</td></tr>
+               <tr><td colSpan={4} className="py-8 text-center text-gray-500">No students found.</td></tr>
             ) : (
               filteredStudents.map((student) => (
                 <tr key={student.id} className="hover:bg-gray-50 transition-colors">
                   <td className="py-4 font-bold text-gray-700">{student.student_id}</td>
-                  <td className="py-4 font-medium text-gray-900 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs uppercase">
-                      {student.full_name?.substring(0, 2) || 'ST'}
-                    </div>
-                    {student.full_name}
-                  </td>
-                  <td className="py-4 text-gray-500">{format(new Date(student.created_at), 'MMM dd, yyyy')}</td>
                   <td className="py-4">
-                    {student.is_approved ? (
-                      <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1">
-                        <CheckCircle size={12} /> Approved
-                      </span>
-                    ) : (
-                      <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1">
-                        Pending
-                      </span>
-                    )}
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs uppercase">
+                        {student.full_name?.substring(0, 2) || 'ST'}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{student.full_name}</p>
+                        <p className="text-xs text-gray-500">Joined {format(new Date(student.created_at), 'MMM dd, yyyy')}</p>
+                      </div>
+                    </div>
                   </td>
-                  <td className="py-4 text-right">
+                  <td className="py-4">
+                    <div className="flex flex-col gap-1 items-start">
+                      {student.is_approved ? (
+                        <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1">
+                          <CheckCircle size={12} /> Approved
+                        </span>
+                      ) : (
+                        <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1">
+                          Pending
+                        </span>
+                      )}
+
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                        <MonitorSmartphone size={12} />
+                        <span className="font-medium text-gray-700">{student.max_devices}</span> allowed
+                      </div>
+
+                      {student.is_approved && student.enrollment_count === 0 && (
+                        <span className="text-[10px] font-medium text-red-500 bg-red-50 px-1.5 py-0.5 rounded">Unassigned</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-4 text-right space-x-2">
+                    <button
+                      onClick={() => updateDeviceLimit(student.id, student.max_devices)}
+                      className="text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded-lg transition-colors border border-gray-200"
+                    >
+                      {student.max_devices === 1 ? '+ Allow 2nd Device' : 'Limit to 1 Device'}
+                    </button>
                     <button
                       onClick={() => toggleApproval(student.id, student.is_approved)}
-                      className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                      className={`text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
                         student.is_approved
                           ? 'text-red-600 bg-red-50 hover:bg-red-100'
                           : 'text-green-600 bg-green-50 hover:bg-green-100'
@@ -187,7 +251,7 @@ const AdminStudents: React.FC = () => {
                     </button>
                     <button
                       onClick={() => openAssignModal(student)}
-                      className="ml-2 text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-sm font-medium"
+                      className="text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg text-xs font-medium"
                     >
                       Assign Course
                     </button>

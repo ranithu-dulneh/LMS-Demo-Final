@@ -1,14 +1,14 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, MonitorSmartphone } from 'lucide-react';
 
 interface ProtectedRouteProps {
   requireAdmin?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requireAdmin = false }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isDeviceActive } = useAuth();
 
   if (loading) {
     return (
@@ -22,6 +22,31 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requireAdmin = false })
     // Need a way to display a toast, or we just redirect to login with a state parameter
     // For now, redirecting and using a query param to show the error on login page
     return <Navigate to="/login?error=unauthorized" replace />;
+  }
+
+  if (!isDeviceActive && !user.is_admin) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/95 px-4 backdrop-blur-sm">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center border border-gray-100">
+          <div className="mx-auto w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6">
+            <MonitorSmartphone size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Device Paused</h2>
+          <p className="text-gray-500 mb-8">
+            Your account is currently active on another device.
+          </p>
+          <p className="text-sm text-gray-400 mb-6">
+            If you want to use this device instead, you can take over the session. The other device will be paused.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors w-full"
+          >
+            Use This Device
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // Check if admin is required

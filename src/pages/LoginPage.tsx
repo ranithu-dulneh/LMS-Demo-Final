@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Mail } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -9,14 +10,21 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { deviceError } = useAuth();
 
   // Check for error parameter from ProtectedRoute
-  React.useEffect(() => {
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('error') === 'unauthorized') {
       setError('Error: Please log in first to access the LMS.');
     }
   }, []);
+
+  useEffect(() => {
+    if (deviceError) {
+      setError(deviceError);
+    }
+  }, [deviceError]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

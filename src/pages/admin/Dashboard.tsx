@@ -1,47 +1,107 @@
-import React from 'react';
-import { Users, Video, FileText, CheckCircle, Upload } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Users, Video, Clock, Upload, AlertCircle } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 const AdminDashboard: React.FC = () => {
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    pendingStudents: 0,
+    unassignedStudents: 0,
+    activeCourses: 0
+  });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      // 1. Total Students
+      const { count: totalStudents } = await supabase
+        .from('student_profiles')
+        .select('*', { count: 'exact', head: true });
+
+      // 2. Pending Students
+      const { count: pendingStudents } = await supabase
+        .from('student_profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_approved', false);
+
+      // 3. Unassigned Students
+      // Get all approved students with their enrollments
+      const { data: approvedWithEnrollments } = await supabase
+        .from('student_profiles')
+        .select(`id, enrollments(count)`)
+        .eq('is_approved', true);
+
+      const unassignedStudents = approvedWithEnrollments?.filter(s =>
+        !s.enrollments || (s.enrollments[0] as any)?.count === 0
+      ).length || 0;
+
+      // 4. Active Courses
+      const { count: activeCourses } = await supabase
+        .from('courses')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'Active');
+
+      setStats({
+        totalStudents: totalStudents || 0,
+        pendingStudents: pendingStudents || 0,
+        unassignedStudents,
+        activeCourses: activeCourses || 0
+      });
+    } catch (error) {
+      console.error("Failed to fetch dashboard stats", error);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+        <Link to="/admin/students?filter=All" className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow group">
           <div className="flex items-center gap-4">
-            <div className="bg-blue-100 p-3 rounded-xl text-blue-600"><Users size={24} /></div>
+            <div className="bg-blue-100 group-hover:bg-blue-600 transition-colors p-3 rounded-xl text-blue-600 group-hover:text-white"><Users size={24} /></div>
             <div>
-              <p className="text-sm text-gray-500 font-medium">Total Students</p>
-              <p className="text-2xl font-bold text-gray-900">1,248</p>
+              <p className="text-sm text-gray-500 font-medium">Total Registered</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>
             </div>
           </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+        </Link>
+        <Link to="/admin/students?filter=Pending" className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow group relative">
+          {stats.pendingStudents > 0 && (
+            <span className="absolute -top-2 -right-2 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-orange-500"></span>
+            </span>
+          )}
           <div className="flex items-center gap-4">
-            <div className="bg-purple-100 p-3 rounded-xl text-purple-600"><Video size={24} /></div>
+            <div className="bg-orange-100 group-hover:bg-orange-500 transition-colors p-3 rounded-xl text-orange-600 group-hover:text-white"><Clock size={24} /></div>
+            <div>
+              <p className="text-sm text-gray-500 font-medium">Pending Requests</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.pendingStudents}</p>
+            </div>
+          </div>
+        </Link>
+        <Link to="/admin/students?filter=Unassigned" className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow group">
+          <div className="flex items-center gap-4">
+            <div className="bg-red-100 group-hover:bg-red-500 transition-colors p-3 rounded-xl text-red-600 group-hover:text-white"><AlertCircle size={24} /></div>
+            <div>
+              <p className="text-sm text-gray-500 font-medium">Unassigned Students</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.unassignedStudents}</p>
+            </div>
+          </div>
+        </Link>
+        <Link to="/admin/courses" className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow group">
+          <div className="flex items-center gap-4">
+            <div className="bg-purple-100 group-hover:bg-purple-600 transition-colors p-3 rounded-xl text-purple-600 group-hover:text-white"><Video size={24} /></div>
             <div>
               <p className="text-sm text-gray-500 font-medium">Active Courses</p>
-              <p className="text-2xl font-bold text-gray-900">24</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.activeCourses}</p>
             </div>
           </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-          <div className="flex items-center gap-4">
-            <div className="bg-green-100 p-3 rounded-xl text-green-600"><CheckCircle size={24} /></div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Pending Payments</p>
-              <p className="text-2xl font-bold text-gray-900">15</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-          <div className="flex items-center gap-4">
-            <div className="bg-orange-100 p-3 rounded-xl text-orange-600"><FileText size={24} /></div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Materials</p>
-              <p className="text-2xl font-bold text-gray-900">156</p>
-            </div>
-          </div>
-        </div>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
