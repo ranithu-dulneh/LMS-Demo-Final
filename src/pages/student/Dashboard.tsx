@@ -28,24 +28,43 @@ const StudentDashboard: React.FC = () => {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Get all active courses
+      const { data: allCourses, error: coursesError } = await supabase
         .from('courses')
         .select('*')
         .eq('status', 'Active')
         .order('id', { ascending: false });
 
-      if (error) {
-        console.error("Error fetching student courses:", error);
-        alert(`Failed to load courses: ${error.message}`);
-      } else {
-        // Map DB data and add mock progress/thumbnails since they are not in DB yet
-        const mappedData = data.map((c: any) => ({
-          ...c,
-          progress: Math.floor(Math.random() * 100),
-          thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-        }));
-        setCourses(mappedData);
+      if (coursesError) throw coursesError;
+
+      // Get user's specific enrollments if they are logged in and not admin
+      let myCourseIds: number[] = [];
+      if (user && !user.is_admin) {
+         const { data: enrollments, error: enrollError } = await supabase
+           .from('enrollments')
+           .select('course_id')
+           .eq('user_id', user.id);
+
+         if (!enrollError && enrollments) {
+           myCourseIds = enrollments.map(e => e.course_id);
+         }
       }
+
+      // Filter courses: show if public OR if explicitly enrolled OR if admin
+      const accessibleCourses = allCourses?.filter(c =>
+         c.visibility === 'public' ||
+         myCourseIds.includes(c.id) ||
+         user?.is_admin
+      ) || [];
+
+      // Map DB data and add mock progress/thumbnails since they are not in DB yet
+      const mappedData = accessibleCourses.map((c: any) => ({
+        ...c,
+        progress: Math.floor(Math.random() * 100),
+        thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+      }));
+      setCourses(mappedData);
+
     } catch (err: any) {
       console.error(err);
       alert(`Unexpected error: ${err.message}`);
