@@ -14,6 +14,7 @@ import AdminMaterials from './pages/admin/Materials';
 import AdminSettings from './pages/admin/Settings';
 import SignupPage from './pages/SignupPage';
 import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -24,19 +25,23 @@ function App() {
             <Route index element={<HomePage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="signup" element={<SignupPage />} />
-            <Route path="student/dashboard" element={<StudentDashboard />} />
-          <Route path="student/course/:id" element={<CourseView />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="student/dashboard" element={<StudentDashboard />} />
+              <Route path="student/course/:id" element={<CourseView />} />
+            </Route>
         </Route>
 
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="students" element={<AdminStudents />} />
-          <Route path="courses" element={<AdminCourses />} />
-          <Route path="courses/:id" element={<CourseManage />} />
-          <Route path="schedules" element={<AdminSchedules />} />
+        <Route path="/admin" element={<ProtectedRoute requireAdmin={true} />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="students" element={<AdminStudents />} />
+            <Route path="courses" element={<AdminCourses />} />
+            <Route path="courses/:id" element={<CourseManage />} />
+            <Route path="schedules" element={<AdminSchedules />} />
             <Route path="materials" element={<AdminMaterials />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
+        </Route>
         </Routes>
       </BrowserRouter>
     </AuthProvider>

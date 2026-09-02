@@ -9,6 +9,7 @@ interface Course {
   lessons: number;
   status: 'Active' | 'Draft';
   exam_year: string;
+  visibility: 'assignable' | 'public';
 }
 
 const AdminCourses: React.FC = () => {
@@ -19,7 +20,13 @@ const AdminCourses: React.FC = () => {
   const [filterYear, setFilterYear] = useState<string>('All');
 
   // Form State
-  const [formData, setFormData] = useState({ title: '', lessons: 0, status: 'Active' as 'Active' | 'Draft', exam_year: '2026' });
+  const [formData, setFormData] = useState({
+    title: '',
+    lessons: 0,
+    status: 'Active' as 'Active' | 'Draft',
+    exam_year: new Date().getFullYear().toString(),
+    visibility: 'assignable' as 'assignable' | 'public'
+  });
 
   useEffect(() => {
     fetchCourses();
@@ -49,13 +56,19 @@ const AdminCourses: React.FC = () => {
 
   const handleOpenNew = () => {
     setEditingCourse(null);
-    setFormData({ title: '', lessons: 0, status: 'Active', exam_year: new Date().getFullYear().toString() });
+    setFormData({ title: '', lessons: 0, status: 'Active', exam_year: new Date().getFullYear().toString(), visibility: 'assignable' });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (course: Course) => {
     setEditingCourse(course);
-    setFormData({ title: course.title, lessons: course.lessons, status: course.status, exam_year: course.exam_year || '' });
+    setFormData({
+      title: course.title,
+      lessons: course.lessons,
+      status: course.status,
+      exam_year: course.exam_year || '',
+      visibility: course.visibility || 'assignable'
+    });
     setIsModalOpen(true);
   };
 
@@ -214,16 +227,29 @@ const AdminCourses: React.FC = () => {
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Active' | 'Draft' })}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Draft">Draft</option>
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Active' | 'Draft' })}
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Draft">Draft</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+                  <select
+                    value={formData.visibility}
+                    onChange={(e) => setFormData({ ...formData, visibility: e.target.value as 'assignable' | 'public' })}
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option value="assignable">Assignable (Invite Only)</option>
+                    <option value="public">Public (Purchase List)</option>
+                  </select>
+                </div>
               </div>
               <div className="pt-4 flex gap-3">
                 <button

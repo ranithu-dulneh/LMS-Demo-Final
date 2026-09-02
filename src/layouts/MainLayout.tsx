@@ -67,7 +67,7 @@ const MainLayout: React.FC = () => {
             <div className="hidden md:flex items-center space-x-8">
               <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Home</Link>
               {user && <Link to="/student/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Student Dashboard</Link>}
-              {user?.role === 'admin' && <Link to="/admin" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Admin Panel</Link>}
+              {user?.is_admin && <Link to="/admin" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Admin Panel</Link>}
             </div>
 
             <div className="flex items-center">
