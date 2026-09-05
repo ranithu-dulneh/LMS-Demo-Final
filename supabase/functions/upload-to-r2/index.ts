@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { S3Client } from "https://deno.land/x/s3_lite_client@0.7.0/mod.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://lms-demo-final.ranithudulneth.workers.dev/",
+  "Access-Control-Allow-Origin": "https://lms-demo-final.ranithudulneth.workers.dev",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
