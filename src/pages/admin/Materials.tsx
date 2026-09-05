@@ -121,16 +121,16 @@ const AdminMaterials: React.FC = () => {
       // 1. Get the session (from auth) to pass the token
       await supabase.auth.getSession();
 
-      // 2. Upload file via Edge Function to Google Drive
+      // 2. Upload file via Edge Function to R2 Storage
       const formData = new FormData();
       formData.append('file', file);
 
-      const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-to-drive', {
+      const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-to-r2', {
         body: formData,
       });
 
-      if (uploadError || !uploadData || !uploadData.webViewLink) {
-        throw new Error(uploadError?.message || "Upload failed to return a web view link");
+      if (uploadError || !uploadData || !uploadData.publicUrl) {
+        throw new Error(uploadError?.message || "Upload failed to return a public URL");
       }
 
       // 3. Insert record into materials table
@@ -138,7 +138,7 @@ const AdminMaterials: React.FC = () => {
         .from('materials')
         .insert([{
           title: title,
-          file_url: uploadData.webViewLink,
+          file_url: uploadData.publicUrl,
           file_size: file.size,
           course_id: selectedCourseId ? parseInt(selectedCourseId) : null,
           lesson_id: selectedLessonId ? parseInt(selectedLessonId) : null,
@@ -354,7 +354,7 @@ const AdminMaterials: React.FC = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
                 >
                   {uploading ? (
-                    <><Loader2 className="animate-spin" size={18} /> Uploading to Drive...</>
+                    <><Loader2 className="animate-spin" size={18} /> Uploading to R2 Storage...</>
                   ) : (
                     <><Upload size={18} /> Upload Material</>
                   )}
