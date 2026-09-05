@@ -121,16 +121,16 @@ const AdminMaterials: React.FC = () => {
       // 1. Get the session (from auth) to pass the token
       await supabase.auth.getSession();
 
-      // 2. Upload file via Edge Function to Google Drive
+      // 2. Upload file via Edge Function to Cloudflare R2
       const formData = new FormData();
       formData.append('file', file);
 
-      const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-to-drive', {
+      const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-to-r2', {
         body: formData,
       });
 
-      if (uploadError || !uploadData || !uploadData.webViewLink) {
-        throw new Error(uploadError?.message || "Upload failed to return a web view link");
+      if (uploadError || !uploadData || !uploadData.objectKey) {
+        throw new Error(uploadError?.message || "Upload failed to return an object key");
       }
 
       // 3. Insert record into materials table
@@ -138,7 +138,7 @@ const AdminMaterials: React.FC = () => {
         .from('materials')
         .insert([{
           title: title,
-          file_url: uploadData.webViewLink,
+          file_url: uploadData.objectKey, // Store the R2 object key instead of a public URL
           file_size: file.size,
           course_id: selectedCourseId ? parseInt(selectedCourseId) : null,
           lesson_id: selectedLessonId ? parseInt(selectedLessonId) : null,
@@ -158,8 +158,31 @@ const AdminMaterials: React.FC = () => {
     }
   };
 
+  const handleDownload = async (objectKey: string) => {
+    try {
+      // If it looks like an old Google Drive link, just open it directly
+      if (objectKey.startsWith('http')) {
+        window.open(objectKey, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('get-r2-url', {
+        body: { objectKey }
+      });
+
+      if (error || !data || !data.url) {
+        throw new Error(error?.message || "Failed to generate download link");
+      }
+
+      window.open(data.url, '_blank', 'noopener,noreferrer');
+    } catch (err: any) {
+      console.error("Download error:", err);
+      alert(`Failed to open file: ${err.message}`);
+    }
+  };
+
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this material record? (Note: The file will still remain in Google Drive)")) return;
+    if (!window.confirm("Are you sure you want to delete this material record? (Note: The file will still remain in cloud storage)")) return;
 
     try {
       const { error } = await supabase.from('materials').delete().eq('id', id);
@@ -230,15 +253,13 @@ const AdminMaterials: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <a
-                  href={material.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => handleDownload(material.file_url)}
                   className="text-gray-400 hover:text-blue-600 transition-colors p-2"
                   title="View/Download"
                 >
                   <Download size={18} />
-                </a>
+                </button>
                 <button
                   onClick={() => handleDelete(material.id)}
                   className="text-gray-400 hover:text-red-600 transition-colors p-2 md:opacity-0 group-hover:opacity-100"
@@ -354,7 +375,7 @@ const AdminMaterials: React.FC = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
                 >
                   {uploading ? (
-                    <><Loader2 className="animate-spin" size={18} /> Uploading to Drive...</>
+                    <><Loader2 className="animate-spin" size={18} /> Uploading...</>
                   ) : (
                     <><Upload size={18} /> Upload Material</>
                   )}
