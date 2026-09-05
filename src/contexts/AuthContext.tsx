@@ -48,6 +48,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkDeviceLimit = async (userId: string) => {
     setDeviceError(null);
     try {
+      // 0. Check if user is admin
+      const { data: adminData } = await supabase
+        .from('admin_users')
+        .select('user_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (adminData) {
+        return true; // Admins have unlimited devices
+      }
+
       // 1. Get max_devices for user
       const { data: profile } = await supabase
         .from('student_profiles')
@@ -167,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Heartbeat & Concurrency Check
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.is_admin) return;
 
     const interval = setInterval(async () => {
       // 1. Update this device's last_active_at
