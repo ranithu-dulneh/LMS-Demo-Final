@@ -121,16 +121,16 @@ const AdminMaterials: React.FC = () => {
       // 1. Get the session (from auth) to pass the token
       await supabase.auth.getSession();
 
-      // 2. Upload file via Edge Function to Google Drive
+      // 2. Upload file via Edge Function to R2
       const formData = new FormData();
       formData.append('file', file);
 
-      const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-to-drive', {
+      const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-to-r2', {
         body: formData,
       });
 
-      if (uploadError || !uploadData || !uploadData.webViewLink) {
-        throw new Error(uploadError?.message || "Upload failed to return a web view link");
+      if (uploadError || !uploadData || !uploadData.key) {
+        throw new Error(uploadError?.message || "Upload failed to return an object key");
       }
 
       // 3. Insert record into materials table
@@ -138,7 +138,7 @@ const AdminMaterials: React.FC = () => {
         .from('materials')
         .insert([{
           title: title,
-          file_url: uploadData.webViewLink,
+          file_url: uploadData.key,
           file_size: file.size,
           course_id: selectedCourseId ? parseInt(selectedCourseId) : null,
           lesson_id: selectedLessonId ? parseInt(selectedLessonId) : null,
@@ -159,7 +159,7 @@ const AdminMaterials: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this material record? (Note: The file will still remain in Google Drive)")) return;
+    if (!window.confirm("Are you sure you want to delete this material record? (Note: The file will still remain in Cloudflare R2)")) return;
 
     try {
       const { error } = await supabase.from('materials').delete().eq('id', id);
@@ -167,6 +167,34 @@ const AdminMaterials: React.FC = () => {
     } catch (err) {
       console.error("Delete error:", err);
       alert("Failed to delete material.");
+    }
+  };
+
+  const handleDownload = async (fileKey: string) => {
+    if (!fileKey) {
+      alert("Invalid file link.");
+      return;
+    }
+
+    // If the file_url is still a Google Drive link (legacy), just open it directly
+    if (fileKey.startsWith('http')) {
+      window.open(fileKey, '_blank');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('get-r2-url', {
+        body: { key: fileKey }
+      });
+
+      if (error || !data || !data.url) {
+        throw new Error(error?.message || "Failed to generate download link.");
+      }
+
+      window.open(data.url, '_blank');
+    } catch (err: any) {
+      console.error("Download error:", err);
+      alert("Failed to download file.");
     }
   };
 
@@ -230,15 +258,13 @@ const AdminMaterials: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <a
-                  href={material.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => handleDownload(material.file_url)}
                   className="text-gray-400 hover:text-blue-600 transition-colors p-2"
                   title="View/Download"
                 >
                   <Download size={18} />
-                </a>
+                </button>
                 <button
                   onClick={() => handleDelete(material.id)}
                   className="text-gray-400 hover:text-red-600 transition-colors p-2 md:opacity-0 group-hover:opacity-100"
