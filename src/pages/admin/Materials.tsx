@@ -131,6 +131,7 @@ const AdminMaterials: React.FC = () => {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
           // DO NOT set Content-Type here; browser will automatically set it with the correct multipart boundary
         },
         body: formData,
