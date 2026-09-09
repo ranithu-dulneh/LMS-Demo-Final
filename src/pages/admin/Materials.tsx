@@ -119,18 +119,27 @@ const AdminMaterials: React.FC = () => {
     setUploading(true);
     try {
       // 1. Get the session (from auth) to pass the token
-      await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("No active session");
 
       // 2. Upload file via Edge Function to R2
       const formData = new FormData();
       formData.append('file', file);
 
-      const { data: uploadData, error: uploadError } = await supabase.functions.invoke('upload-to-r2', {
+      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-to-r2`;
+      const uploadResponse = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          // DO NOT set Content-Type here; browser will automatically set it with the correct multipart boundary
+        },
         body: formData,
       });
 
-      if (uploadError || !uploadData || !uploadData.key) {
-        throw new Error(uploadError?.message || "Upload failed to return an object key");
+      const uploadData = await uploadResponse.json();
+
+      if (!uploadResponse.ok || !uploadData.key) {
+        throw new Error(uploadData.error || "Upload failed to return an object key");
       }
 
       // 3. Insert record into materials table
