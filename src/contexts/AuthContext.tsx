@@ -53,28 +53,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('admin_users')
         .select('user_id')
         .eq('user_id', userId)
-        .maybeSingle();
+        .limit(1);
 
-      if (adminData) {
+      if (adminData && adminData.length > 0) {
         return true; // Admins have unlimited devices
       }
 
       // 1. Get max_devices for user
-      const { data: profile } = await supabase
+      const { data: profileData } = await supabase
         .from('student_profiles')
         .select('max_devices')
         .eq('id', userId)
-        .maybeSingle();
+        .limit(1);
 
+      const profile = profileData?.[0];
       const maxDevices = profile?.max_devices || 1;
 
       // 2. Check if this device is already registered
-      const { data: existingSession } = await supabase
+      const { data: sessionData } = await supabase
         .from('device_sessions')
         .select('*')
         .eq('user_id', userId)
         .eq('device_token', deviceToken)
-        .maybeSingle();
+        .limit(1);
+
+      const existingSession = sessionData?.[0];
 
       if (existingSession) {
         // Device is registered, update last active
@@ -126,16 +129,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('admin_users')
         .select('user_id')
         .eq('user_id', authUser.id)
-        .maybeSingle();
+        .limit(1);
 
-      const isAdmin = !!adminData;
+      const isAdmin = !!(adminData && adminData.length > 0);
 
       // Check for student profile
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profiles, error: profileError } = await supabase
         .from('student_profiles')
         .select('student_id, is_approved, full_name')
         .eq('id', authUser.id)
-        .maybeSingle();
+        .limit(1);
+
+      const profileData = profiles?.[0];
 
       if (!profileError && profileData) {
         setUser({ ...authUser, student_profile: profileData, is_admin: isAdmin });
