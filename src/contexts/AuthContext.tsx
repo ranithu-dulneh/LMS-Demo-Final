@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('student_profiles')
         .select('max_devices')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       const maxDevices = profile?.max_devices || 1;
 
@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .select('*')
         .eq('user_id', userId)
         .eq('device_token', deviceToken)
-        .single();
+        .maybeSingle();
 
       if (existingSession) {
         // Device is registered, update last active
@@ -126,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('admin_users')
         .select('user_id')
         .eq('user_id', authUser.id)
-        .single();
+        .maybeSingle();
 
       const isAdmin = !!adminData;
 
@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('student_profiles')
         .select('student_id, is_approved, full_name')
         .eq('id', authUser.id)
-        .single();
+        .maybeSingle();
 
       if (!profileError && profileData) {
         setUser({ ...authUser, student_profile: profileData, is_admin: isAdmin });
