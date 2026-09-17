@@ -20,6 +20,7 @@ const StudentDashboard: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterYear, setFilterYear] = useState<string>('All');
+  const [totalCompletedLessons, setTotalCompletedLessons] = useState(0);
 
   useEffect(() => {
     fetchCourses();
@@ -57,12 +58,63 @@ const StudentDashboard: React.FC = () => {
          user?.is_admin
       ) || [];
 
-      // Map DB data and add mock progress/thumbnails since they are not in DB yet
-      const mappedData = accessibleCourses.map((c: any) => ({
-        ...c,
-        progress: Math.floor(Math.random() * 100),
-        thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-      }));
+      let mappedData = [];
+      let globalCompletedCount = 0;
+
+      if (accessibleCourses.length > 0) {
+         const courseIds = accessibleCourses.map(c => c.id);
+
+         // 1. Fetch total lessons/sessions per course
+         // We count total sessions across all lessons in the course
+         const { data: sessionCountsData, error: sessionCountsError } = await supabase
+            .from('sessions')
+            .select('id, lesson_id, lessons!inner(course_id)')
+            .in('lessons.course_id', courseIds);
+
+         if (sessionCountsError) throw sessionCountsError;
+
+         // Build a map of course_id -> total sessions
+         const courseSessionTotals: Record<number, number> = {};
+         if (sessionCountsData) {
+            sessionCountsData.forEach((s: any) => {
+               const cId = s.lessons.course_id;
+               courseSessionTotals[cId] = (courseSessionTotals[cId] || 0) + 1;
+            });
+         }
+
+         // 2. Fetch completed sessions for the user
+         let completedCounts: Record<number, number> = {};
+         if (user) {
+            const { data: progressData, error: progressError } = await supabase
+               .from('student_progress')
+               .select('course_id')
+               .eq('user_id', user.id)
+               .in('course_id', courseIds);
+
+            if (!progressError && progressData) {
+               globalCompletedCount = progressData.length;
+               progressData.forEach(p => {
+                  completedCounts[p.course_id] = (completedCounts[p.course_id] || 0) + 1;
+               });
+            }
+         }
+
+         mappedData = accessibleCourses.map((c: any) => {
+           const totalSessions = courseSessionTotals[c.id] || 0;
+           const completedSessions = completedCounts[c.id] || 0;
+           const progressPercentage = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+
+           return {
+             ...c,
+             lessons: totalSessions, // We display total sessions as "lessons" in the UI
+             progress: progressPercentage,
+             completedLessons: completedSessions,
+             thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+           };
+         });
+      }
+
+      setTotalCompletedLessons(globalCompletedCount);
       setCourses(mappedData);
 
     } catch (err: any) {
@@ -98,14 +150,14 @@ const StudentDashboard: React.FC = () => {
             <div className="bg-green-100 p-3 rounded-lg text-green-600"><CheckCircle size={24} /></div>
             <div>
               <p className="text-sm text-green-900 font-medium">Completed Lessons</p>
-              <p className="text-2xl font-bold text-green-700">23</p>
+              <p className="text-2xl font-bold text-green-700">{totalCompletedLessons}</p>
             </div>
           </div>
           <div className="bg-purple-50 rounded-xl p-6 flex items-center gap-4">
             <div className="bg-purple-100 p-3 rounded-lg text-purple-600"><Clock size={24} /></div>
             <div>
               <p className="text-sm text-purple-900 font-medium">Study Hours</p>
-              <p className="text-2xl font-bold text-purple-700">42h</p>
+              <p className="text-2xl font-bold text-purple-700">--</p>
             </div>
           </div>
         </div>
