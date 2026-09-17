@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Upload, X, Loader2, Trash2 } from 'lucide-react';
+import { FileText, Upload, X, Loader2, Trash2, ExternalLink } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 interface Material {
   id: number;
@@ -44,7 +45,7 @@ const AdminMaterials: React.FC = () => {
   const [selectedLessonId, setSelectedLessonId] = useState<string>('');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   const [title, setTitle] = useState('');
-  const [fileUrl, setFileUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     fetchMaterials();
@@ -109,20 +110,59 @@ const AdminMaterials: React.FC = () => {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !fileUrl) {
-      alert("Please provide a title and file URL.");
+    if (!title || !selectedFile) {
+      alert("Please provide a title and select a file.");
+      return;
+    }
+
+    const accountId = import.meta.env.VITE_R2_ACCOUNT_ID;
+    const accessKeyId = import.meta.env.VITE_R2_ACCESS_KEY_ID;
+    const secretAccessKey = import.meta.env.VITE_R2_SECRET_ACCESS_KEY;
+    const bucketName = import.meta.env.VITE_R2_BUCKET_NAME;
+    const publicUrlBase = import.meta.env.VITE_R2_PUBLIC_URL;
+
+    if (!accountId || !accessKeyId || !secretAccessKey || !bucketName || !publicUrlBase) {
+      alert("Missing R2 environment variables. Please check the setup guide.");
       return;
     }
 
     setUploading(true);
     try {
-      // 3. Insert record into materials table
+      // 1. Configure S3 Client for Cloudflare R2
+      const s3Client = new S3Client({
+        region: 'auto',
+        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId,
+          secretAccessKey,
+        },
+      });
+
+      // 2. Upload file to R2
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+
+      const uploadCommand = new PutObjectCommand({
+        Bucket: bucketName,
+        Key: fileName,
+        Body: selectedFile,
+        ContentType: selectedFile.type,
+      });
+
+      await s3Client.send(uploadCommand);
+
+      // 3. Construct public URL
+      // Ensure there is exactly one slash between the base URL and the filename
+      const formattedPublicUrlBase = publicUrlBase.endsWith('/') ? publicUrlBase.slice(0, -1) : publicUrlBase;
+      const fileUrl = `${formattedPublicUrlBase}/${fileName}`;
+
+      // 4. Insert record into materials table
       const { error: dbError } = await supabase
         .from('materials')
         .insert([{
           title: title,
           file_url: fileUrl,
-          file_size: 0,
+          file_size: selectedFile.size,
           course_id: selectedCourseId ? parseInt(selectedCourseId) : null,
           lesson_id: selectedLessonId ? parseInt(selectedLessonId) : null,
           session_id: selectedSessionId ? parseInt(selectedSessionId) : null,
@@ -156,7 +196,7 @@ const AdminMaterials: React.FC = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setTitle('');
-    setFileUrl('');
+    setSelectedFile(null);
     setSelectedCourseId('');
     setSelectedLessonId('');
     setSelectedSessionId('');
@@ -212,6 +252,15 @@ const AdminMaterials: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <a
+                  href={material.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-blue-600 transition-colors p-2 md:opacity-0 group-hover:opacity-100"
+                  title="Download/View File"
+                >
+                  <ExternalLink size={18} />
+                </a>
                 <button
                   onClick={() => handleDelete(material.id)}
                   className="text-gray-400 hover:text-red-600 transition-colors p-2 md:opacity-0 group-hover:opacity-100"
@@ -253,13 +302,19 @@ const AdminMaterials: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">File URL *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Select File *</label>
                 <input
-                  type="text"
-                  placeholder="https://..."
-                  value={fileUrl}
-                  onChange={(e) => setFileUrl(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  type="file"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      setSelectedFile(e.target.files[0]);
+                      // Auto-fill title if not already set
+                      if (!title) {
+                        setTitle(e.target.files[0].name.split('.')[0]);
+                      }
+                    }
+                  }}
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   required
                   disabled={uploading}
                 />
