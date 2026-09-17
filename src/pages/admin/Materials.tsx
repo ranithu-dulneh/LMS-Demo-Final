@@ -142,10 +142,14 @@ const AdminMaterials: React.FC = () => {
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
+      // Convert File to ArrayBuffer to avoid `e.getReader is not a function` error
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const body = new Uint8Array(arrayBuffer);
+
       const uploadCommand = new PutObjectCommand({
         Bucket: bucketName,
         Key: fileName,
-        Body: selectedFile,
+        Body: body,
         ContentType: selectedFile.type,
       });
 
