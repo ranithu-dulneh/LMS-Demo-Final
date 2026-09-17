@@ -174,6 +174,9 @@ const AdminMaterials: React.FC = () => {
 
       if (dbError) throw dbError;
 
+      // Explicitly fetch materials as Realtime might not be enabled on the table
+      await fetchMaterials();
+
       // Reset form and close modal
       closeModal();
 
@@ -191,6 +194,9 @@ const AdminMaterials: React.FC = () => {
     try {
       const { error } = await supabase.from('materials').delete().eq('id', id);
       if (error) throw error;
+
+      // Explicitly fetch materials as Realtime might not be enabled on the table
+      await fetchMaterials();
     } catch (err) {
       console.error("Delete error:", err);
       alert("Failed to delete material.");
