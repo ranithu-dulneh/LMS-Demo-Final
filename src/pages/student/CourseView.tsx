@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, FileText, MessageSquare, Download, Video, Lock, Play, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, FileText, MessageSquare, Video, Lock, Play, ChevronDown, ChevronUp } from 'lucide-react';
 import CustomVideoPlayer from '../../components/video/CustomVideoPlayer';
 import { supabase } from '../../lib/supabase';
 
@@ -178,9 +178,6 @@ const CourseView: React.FC = () => {
                           <p className="text-xs text-gray-500">{material.type} • {material.size}</p>
                         </div>
                       </div>
-                      <button className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium">
-                        <Download size={18} /> Download
-                      </button>
                     </div>
                   ))}
                 </div>
