@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Upload, Download, X, Loader2, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Upload, X, Loader2, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 interface Material {
@@ -44,9 +44,7 @@ const AdminMaterials: React.FC = () => {
   const [selectedLessonId, setSelectedLessonId] = useState<string>('');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   const [title, setTitle] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileUrl, setFileUrl] = useState('');
 
   useEffect(() => {
     fetchMaterials();
@@ -111,45 +109,20 @@ const AdminMaterials: React.FC = () => {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !title) {
-      alert("Please provide a title and select a file.");
+    if (!title || !fileUrl) {
+      alert("Please provide a title and file URL.");
       return;
     }
 
     setUploading(true);
     try {
-      // 1. Get the session (from auth) to pass the token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("No active session");
-
-      // 2. Upload file via Edge Function to R2
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-to-r2`;
-      const uploadResponse = await fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-          // DO NOT set Content-Type here; browser will automatically set it with the correct multipart boundary
-        },
-        body: formData,
-      });
-
-      const uploadData = await uploadResponse.json();
-
-      if (!uploadResponse.ok || !uploadData.key) {
-        throw new Error(uploadData.error || "Upload failed to return an object key");
-      }
-
       // 3. Insert record into materials table
       const { error: dbError } = await supabase
         .from('materials')
         .insert([{
           title: title,
-          file_url: uploadData.key,
-          file_size: file.size,
+          file_url: fileUrl,
+          file_size: 0,
           course_id: selectedCourseId ? parseInt(selectedCourseId) : null,
           lesson_id: selectedLessonId ? parseInt(selectedLessonId) : null,
           session_id: selectedSessionId ? parseInt(selectedSessionId) : null,
@@ -169,7 +142,7 @@ const AdminMaterials: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this material record? (Note: The file will still remain in Cloudflare R2)")) return;
+    if (!window.confirm("Are you sure you want to delete this material record?")) return;
 
     try {
       const { error } = await supabase.from('materials').delete().eq('id', id);
@@ -180,42 +153,13 @@ const AdminMaterials: React.FC = () => {
     }
   };
 
-  const handleDownload = async (fileKey: string) => {
-    if (!fileKey) {
-      alert("Invalid file link.");
-      return;
-    }
-
-    // If the file_url is still a Google Drive link (legacy), just open it directly
-    if (fileKey.startsWith('http')) {
-      window.open(fileKey, '_blank');
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('get-r2-url', {
-        body: { key: fileKey }
-      });
-
-      if (error || !data || !data.url) {
-        throw new Error(error?.message || "Failed to generate download link.");
-      }
-
-      window.open(data.url, '_blank');
-    } catch (err: any) {
-      console.error("Download error:", err);
-      alert("Failed to download file.");
-    }
-  };
-
   const closeModal = () => {
     setIsModalOpen(false);
     setTitle('');
-    setFile(null);
+    setFileUrl('');
     setSelectedCourseId('');
     setSelectedLessonId('');
     setSelectedSessionId('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   // Filter dropdowns based on selections
@@ -269,13 +213,6 @@ const AdminMaterials: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleDownload(material.file_url)}
-                  className="text-gray-400 hover:text-blue-600 transition-colors p-2"
-                  title="View/Download"
-                >
-                  <Download size={18} />
-                </button>
-                <button
                   onClick={() => handleDelete(material.id)}
                   className="text-gray-400 hover:text-red-600 transition-colors p-2 md:opacity-0 group-hover:opacity-100"
                   title="Delete Record"
@@ -316,12 +253,13 @@ const AdminMaterials: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">File *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">File URL *</label>
                 <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  type="text"
+                  placeholder="https://..."
+                  value={fileUrl}
+                  onChange={(e) => setFileUrl(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                   required
                   disabled={uploading}
                 />
@@ -390,9 +328,9 @@ const AdminMaterials: React.FC = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
                 >
                   {uploading ? (
-                    <><Loader2 className="animate-spin" size={18} /> Uploading to Drive...</>
+                    <><Loader2 className="animate-spin" size={18} /> Creating Record...</>
                   ) : (
-                    <><Upload size={18} /> Upload Material</>
+                    <><Upload size={18} /> Add Material</>
                   )}
                 </button>
               </div>

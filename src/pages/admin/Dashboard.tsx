@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Video, Clock, Upload, AlertCircle } from 'lucide-react';
+import { Users, Video, Clock, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 const AdminDashboard: React.FC = () => {
@@ -105,34 +105,6 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Quick Upload Form (Mock) */}
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Upload size={20} className="text-blue-600"/> Quick Material Upload
-          </h2>
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-              <input type="text" className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. Unit 5 Past Papers" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Course Assignment</label>
-              <select className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
-                <option>A/L Accounting - Revision 2024</option>
-                <option>Theory Class - Unit 05</option>
-              </select>
-            </div>
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer">
-              <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600">Drag & drop PDF here or click to browse</p>
-              <p className="text-xs text-gray-400 mt-1">Uploads securely via Google Drive API</p>
-            </div>
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors">
-              Upload Document
-            </button>
-          </form>
-        </div>
-
         {/* Recent Activity */}
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
            <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
