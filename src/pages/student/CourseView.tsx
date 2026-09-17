@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, FileText, MessageSquare, Video, Lock, Play, ChevronDown, ChevronUp, Download, Eye, X } from 'lucide-react';
+import { ChevronLeft, FileText, MessageSquare, Video, Lock, Play, ChevronDown, ChevronUp, Download, Eye, X, CheckCircle } from 'lucide-react';
 import CustomVideoPlayer from '../../components/video/CustomVideoPlayer';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Lesson {
   id: number;
@@ -33,6 +34,7 @@ interface Material {
 }
 
 const CourseView: React.FC = () => {
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const [course, setCourse] = useState<any>(null);
 
@@ -46,6 +48,8 @@ const CourseView: React.FC = () => {
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState<'materials' | 'discussion'>('materials');
   const [activeMaterialUrl, setActiveMaterialUrl] = useState<string | null>(null);
+  const [completedSessionIds, setCompletedSessionIds] = useState<number[]>([]);
+  const [togglingProgress, setTogglingProgress] = useState(false);
 
   useEffect(() => {
     fetchCourseAndData();
@@ -99,6 +103,19 @@ const CourseView: React.FC = () => {
 
         if (firstSessionFound) {
           setActiveSession(firstSessionFound);
+        }
+
+        // Fetch user progress for this course
+        if (user) {
+          const { data: progressData, error: progressError } = await supabase
+            .from('student_progress')
+            .select('session_id')
+            .eq('user_id', user.id)
+            .eq('course_id', id);
+
+          if (!progressError && progressData) {
+            setCompletedSessionIds(progressData.map(p => p.session_id));
+          }
         }
 
         // Fetch all materials for this course
@@ -156,6 +173,44 @@ const CourseView: React.FC = () => {
     );
   };
 
+  const toggleProgress = async (sessionId: number) => {
+    if (!user || !id) return;
+    setTogglingProgress(true);
+
+    const isCompleted = completedSessionIds.includes(sessionId);
+
+    try {
+      if (isCompleted) {
+        // Remove progress
+        const { error } = await supabase
+          .from('student_progress')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('session_id', sessionId);
+
+        if (error) throw error;
+        setCompletedSessionIds(prev => prev.filter(sId => sId !== sessionId));
+      } else {
+        // Add progress
+        const { error } = await supabase
+          .from('student_progress')
+          .insert([{
+            user_id: user.id,
+            course_id: parseInt(id),
+            session_id: sessionId
+          }]);
+
+        if (error) throw error;
+        setCompletedSessionIds(prev => [...prev, sessionId]);
+      }
+    } catch (err: any) {
+      console.error("Error toggling progress:", err);
+      alert("Failed to update progress.");
+    } finally {
+      setTogglingProgress(false);
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -202,19 +257,48 @@ const CourseView: React.FC = () => {
             <Link to="/student/dashboard" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 mb-4 transition-colors">
               <ChevronLeft size={16} className="mr-1" /> Back to Dashboard
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900 truncate">{activeSession ? activeSession.title : course.title}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900 truncate">{activeSession ? activeSession.title : course.title}</h1>
+              {activeSession && completedSessionIds.includes(activeSession.id) && (
+                 <span className="bg-green-100 text-green-700 p-1 rounded-full flex-shrink-0" title="Completed">
+                    <CheckCircle size={20} className="fill-green-100" />
+                 </span>
+              )}
+            </div>
             <p className="text-gray-500 mt-1 truncate">
               {activeLessonForSession ? `${course.title} - ${activeLessonForSession.title}` : course.title}
             </p>
           </div>
-          {activeMaterialUrl && (
-             <button
-                onClick={() => setActiveMaterialUrl(null)}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors flex-shrink-0"
-             >
-                <X size={16} /> Close Material
-             </button>
-          )}
+          <div className="flex items-center gap-3 flex-shrink-0">
+             {activeSession && (
+                <button
+                   onClick={() => toggleProgress(activeSession.id)}
+                   disabled={togglingProgress}
+                   className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors border ${
+                     completedSessionIds.includes(activeSession.id)
+                       ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
+                       : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                   } disabled:opacity-50`}
+                >
+                   {togglingProgress ? (
+                     <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                   ) : (
+                     <CheckCircle size={16} className={completedSessionIds.includes(activeSession.id) ? 'fill-green-200' : ''} />
+                   )}
+                   <span className="hidden sm:inline">
+                     {completedSessionIds.includes(activeSession.id) ? 'Completed' : 'Mark as Complete'}
+                   </span>
+                </button>
+             )}
+             {activeMaterialUrl && (
+               <button
+                  onClick={() => setActiveMaterialUrl(null)}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors flex-shrink-0"
+               >
+                  <X size={16} /> <span className="hidden sm:inline">Close Material</span>
+               </button>
+             )}
+          </div>
         </div>
 
         {/* Video Player & Material Viewer Split Screen Section */}
