@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogIn, Menu, User, LogOut, ChevronDown, Book } from 'lucide-react';
+import { Menu, User, LogOut, ChevronDown, Book } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
