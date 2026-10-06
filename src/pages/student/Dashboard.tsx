@@ -139,11 +139,11 @@ const StudentDashboard: React.FC = () => {
         <p className="text-gray-500 mt-2">You have completed 65% of your weekly goals. Keep it up!</p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-blue-50 rounded-xl p-6 flex items-center gap-4">
-            <div className="bg-blue-100 p-3 rounded-lg text-blue-600"><PlayCircle size={24} /></div>
+          <div className="bg-[#fdf5e6] rounded-xl p-6 flex items-center gap-4">
+            <div className="bg-[#f0e6d2] p-3 rounded-lg text-[#a67c00]"><PlayCircle size={24} /></div>
             <div>
               <p className="text-sm text-blue-900 font-medium">Active Courses</p>
-              <p className="text-2xl font-bold text-blue-700">{courses.length}</p>
+              <p className="text-2xl font-bold text-[#8b6914]">{courses.length}</p>
             </div>
           </div>
           <div className="bg-green-50 rounded-xl p-6 flex items-center gap-4">
@@ -174,7 +174,7 @@ const StudentDashboard: React.FC = () => {
             <select
               value={filterYear}
               onChange={(e) => setFilterYear(e.target.value)}
-              className="bg-transparent border-none outline-none text-blue-600 font-bold cursor-pointer"
+              className="bg-transparent border-none outline-none text-[#a67c00] font-bold cursor-pointer"
             >
               <option value="All">All</option>
               {uniqueYears.map(year => (
@@ -216,11 +216,11 @@ const StudentDashboard: React.FC = () => {
                     <div className="mt-auto">
                       <div className="flex justify-between text-sm mb-2">
                         <span className="font-medium text-gray-700">Progress</span>
-                        <span className="font-bold text-blue-600">{course.progress || 0}%</span>
+                        <span className="font-bold text-[#a67c00]">{course.progress || 0}%</span>
                       </div>
                       <div className="w-full bg-gray-100 rounded-full h-2.5 mb-4">
                         <div
-                          className={`h-2.5 rounded-full ${course.progress === 100 ? 'bg-green-500' : 'bg-blue-600'}`}
+                          className={`h-2.5 rounded-full ${course.progress === 100 ? 'bg-green-500' : 'bg-black'}`}
                           style={{ width: `${course.progress || 0}%` }}
                         ></div>
                       </div>
@@ -229,7 +229,7 @@ const StudentDashboard: React.FC = () => {
                         className={`w-full py-2.5 rounded-xl font-bold text-center block transition-colors ${
                           course.progress === 100
                             ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                            : 'bg-[#fdf5e6] text-[#8b6914] hover:bg-[#f0e6d2]'
                         }`}
                       >
                         {course.progress === 100 ? 'Review Course' : 'Continue Learning'}

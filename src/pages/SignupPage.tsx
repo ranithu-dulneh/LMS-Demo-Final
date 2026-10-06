@@ -40,8 +40,9 @@ const SignupPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto w-full mt-10">
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+    <div className="fixed inset-0 pt-16 flex justify-center items-center bg-gradient-to-br from-[#eef2ff] via-[#f8fafc] to-[#e0efff] z-0 overflow-y-auto">
+      <div className="max-w-md w-full px-4 mb-16 relative z-10">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
         <div className="p-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
@@ -65,7 +66,7 @@ const SignupPage: React.FC = () => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 focus:bg-white"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#a67c00] focus:border-[#a67c00] transition-colors bg-gray-50 focus:bg-white"
                   placeholder="John Doe"
                   required
                 />
@@ -82,7 +83,7 @@ const SignupPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 focus:bg-white"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#a67c00] focus:border-[#a67c00] transition-colors bg-gray-50 focus:bg-white"
                   placeholder="you@example.com"
                   required
                 />
@@ -99,7 +100,7 @@ const SignupPage: React.FC = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 focus:bg-white"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#a67c00] focus:border-[#a67c00] transition-colors bg-gray-50 focus:bg-white"
                   placeholder="••••••••"
                   required
                   minLength={6}
@@ -110,16 +111,17 @@ const SignupPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a67c00] transition-colors disabled:opacity-50"
             >
               {loading ? 'Creating Account...' : 'Sign Up'}
             </button>
           </form>
         </div>
-        <div className="bg-gray-50 px-8 py-4 border-t border-gray-100 text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account? <Link to="/login" className="font-bold text-blue-600 hover:text-blue-500">Sign In</Link>
-          </p>
+          <div className="bg-gray-50 px-8 py-4 border-t border-gray-100 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account? <Link to="/login" className="font-bold text-[#a67c00] hover:text-yellow-700">Sign In</Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

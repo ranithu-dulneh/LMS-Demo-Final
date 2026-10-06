@@ -132,7 +132,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ lesson, onClo
               {!isFormOpen && (
                 <button
                   onClick={handleOpenNew}
-                  className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
+                  className="bg-[#f0e6d2] hover:bg-blue-200 text-[#8b6914] px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
                 >
                   <Plus size={16} /> Add Session
                 </button>
@@ -146,7 +146,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ lesson, onClo
                 <Video className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                 <p>No sessions added yet.</p>
                 {!isFormOpen && (
-                  <button onClick={handleOpenNew} className="text-blue-600 text-sm font-medium mt-2 hover:underline">
+                  <button onClick={handleOpenNew} className="text-[#a67c00] text-sm font-medium mt-2 hover:underline">
                     Add the first session
                   </button>
                 )}
@@ -177,7 +177,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ lesson, onClo
                     </div>
                     <button
                       onClick={() => handleOpenEdit(session)}
-                      className="text-gray-400 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="text-gray-400 hover:text-[#a67c00] p-2 hover:bg-[#fdf5e6] rounded-lg transition-colors"
                     >
                       <Settings size={16} />
                     </button>
@@ -205,7 +205,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ lesson, onClo
                     placeholder="e.g. Part 1: Introduction"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#a67c00] outline-none"
                     required
                   />
                 </div>
@@ -219,7 +219,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ lesson, onClo
                       placeholder="https://youtube.com/watch?v=..."
                       value={formData.youtube_link}
                       onChange={(e) => setFormData({ ...formData, youtube_link: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg pl-9 p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full border border-gray-300 rounded-lg pl-9 p-2.5 text-sm focus:ring-2 focus:ring-[#a67c00] outline-none"
                       required
                     />
                   </div>
@@ -237,7 +237,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ lesson, onClo
                         checked={formData.is_free}
                         onChange={(e) => setFormData({ ...formData, is_free: e.target.checked })}
                       />
-                      <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
                     </label>
                   </div>
 
@@ -252,7 +252,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ lesson, onClo
                           placeholder="1500"
                           value={formData.price}
                           onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })}
-                          className="w-full border border-gray-300 rounded-lg pl-8 p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                          className="w-full border border-gray-300 rounded-lg pl-8 p-2 text-sm focus:ring-2 focus:ring-[#a67c00] outline-none bg-white"
                           required={!formData.is_free}
                         />
                       </div>
@@ -270,7 +270,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ lesson, onClo
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-xl text-sm transition-colors shadow-sm"
+                    className="flex-1 bg-black hover:bg-gray-800 text-white font-medium py-2 rounded-xl text-sm transition-colors shadow-sm"
                   >
                     Save Session
                   </button>

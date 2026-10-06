@@ -151,7 +151,7 @@ const AdminStudents: React.FC = () => {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 relative">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <Users size={24} className="text-blue-600" /> Manage Students
+          <Users size={24} className="text-[#a67c00]" /> Manage Students
         </h2>
         <div className="flex gap-2">
           <div className="relative">
@@ -161,7 +161,7 @@ const AdminStudents: React.FC = () => {
               placeholder="Search students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#a67c00] outline-none text-sm"
             />
           </div>
           <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-2">
@@ -201,7 +201,7 @@ const AdminStudents: React.FC = () => {
                   <td className="py-4 font-bold text-gray-700">{student.student_id}</td>
                   <td className="py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs uppercase">
+                      <div className="w-8 h-8 rounded-full bg-[#f0e6d2] text-[#a67c00] flex items-center justify-center font-bold text-xs uppercase">
                         {student.full_name?.substring(0, 2) || 'ST'}
                       </div>
                       <div>
@@ -251,7 +251,7 @@ const AdminStudents: React.FC = () => {
                     </button>
                     <button
                       onClick={() => openAssignModal(student)}
-                      className="text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg text-xs font-medium"
+                      className="text-[#a67c00] bg-[#fdf5e6] hover:bg-[#f0e6d2] px-2.5 py-1.5 rounded-lg text-xs font-medium"
                     >
                       Assign Course
                     </button>
@@ -269,14 +269,14 @@ const AdminStudents: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden m-4">
             <div className="flex justify-between items-center p-6 border-b border-gray-100">
               <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <BookOpen className="text-blue-600" size={20}/> Assign Course
+                <BookOpen className="text-[#a67c00]" size={20}/> Assign Course
               </h3>
               <button onClick={() => setIsAssignModalOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <X size={24} />
               </button>
             </div>
             <form onSubmit={handleAssignCourse} className="p-6 space-y-4">
-              <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 mb-4">
+              <div className="bg-[#fdf5e6] p-3 rounded-lg text-sm text-[#694d07] mb-4">
                 Assigning course to: <span className="font-bold">{selectedStudent.full_name}</span> ({selectedStudent.student_id})
               </div>
               <div>
@@ -284,7 +284,7 @@ const AdminStudents: React.FC = () => {
                 <select
                   value={selectedCourseId}
                   onChange={(e) => setSelectedCourseId(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#a67c00] outline-none"
                   required
                 >
                   <option value="" disabled>Select a course...</option>
@@ -307,7 +307,7 @@ const AdminStudents: React.FC = () => {
                 <button
                   type="submit"
                   disabled={!selectedCourseId}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors"
+                  className="flex-1 bg-black hover:bg-gray-800 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors"
                 >
                   Assign
                 </button>

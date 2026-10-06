@@ -62,9 +62,9 @@ const MainLayout: React.FC = () => {
             </div>
 
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Home</Link>
-              {user && <Link to="/student/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Student Dashboard</Link>}
-              {user?.is_admin && <Link to="/admin" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Admin Panel</Link>}
+              <Link to="/" className="text-gray-600 hover:text-[#a67c00] transition-colors font-medium">Home</Link>
+              {user && <Link to="/student/dashboard" className="text-gray-600 hover:text-[#a67c00] transition-colors font-medium">Student Dashboard</Link>}
+              {user?.is_admin && <Link to="/admin" className="text-gray-600 hover:text-[#a67c00] transition-colors font-medium">Admin Panel</Link>}
             </div>
 
             <div className="flex items-center">
@@ -78,7 +78,7 @@ const MainLayout: React.FC = () => {
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
                     className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full font-medium transition-colors border border-gray-200"
                   >
-                    <div className="bg-blue-100 text-blue-700 p-1.5 rounded-full">
+                    <div className="bg-[#f0e6d2] text-[#8b6914] p-1.5 rounded-full">
                       <User className="h-4 w-4" />
                     </div>
                     <span className="hidden md:block max-w-[100px] truncate text-sm">
@@ -103,7 +103,7 @@ const MainLayout: React.FC = () => {
                               key={c.id}
                               to={`/student/course/${c.id}`}
                               onClick={() => setShowProfileMenu(false)}
-                              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors"
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#fdf5e6] hover:text-[#8b6914] rounded-lg transition-colors"
                             >
                               <Book className="h-4 w-4 flex-shrink-0" />
                               <span className="truncate">{c.title}</span>

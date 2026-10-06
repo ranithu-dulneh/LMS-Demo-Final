@@ -229,7 +229,7 @@ const AdminMaterials: React.FC = () => {
         </h2>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm transition-colors"
+          className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm transition-colors"
         >
           <Upload size={16} /> Upload New
         </button>
@@ -266,7 +266,7 @@ const AdminMaterials: React.FC = () => {
                   href={material.file_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-blue-600 transition-colors p-2 md:opacity-0 group-hover:opacity-100"
+                  className="text-gray-400 hover:text-[#a67c00] transition-colors p-2 md:opacity-0 group-hover:opacity-100"
                   title="Download/View File"
                 >
                   <ExternalLink size={18} />
@@ -290,7 +290,7 @@ const AdminMaterials: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-6 border-b border-gray-100">
               <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <Upload size={20} className="text-blue-600"/> Upload Material
+                <Upload size={20} className="text-[#a67c00]"/> Upload Material
               </h3>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50" disabled={uploading}>
                 <X size={20} />
@@ -305,7 +305,7 @@ const AdminMaterials: React.FC = () => {
                   placeholder="e.g. 2023 Past Paper"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#a67c00] outline-none text-sm"
                   required
                   disabled={uploading}
                 />
@@ -324,7 +324,7 @@ const AdminMaterials: React.FC = () => {
                       }
                     }
                   }}
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#a67c00] outline-none text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#fdf5e6] file:text-[#8b6914] hover:file:bg-[#f0e6d2]"
                   required
                   disabled={uploading}
                 />
@@ -390,7 +390,7 @@ const AdminMaterials: React.FC = () => {
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                  className="w-full bg-black hover:bg-gray-800 disabled:bg-blue-400 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
                 >
                   {uploading ? (
                     <><Loader2 className="animate-spin" size={18} /> Creating Record...</>

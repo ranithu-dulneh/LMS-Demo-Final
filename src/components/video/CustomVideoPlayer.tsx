@@ -230,7 +230,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
           {/* Center Play/Pause Overlay (Shows briefly on tap) */}
           <div className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 z-20 ${showControls && !playing ? 'opacity-100' : 'opacity-0'}`}>
             <button
-              className="bg-blue-600/90 text-white rounded-full p-6 shadow-2xl backdrop-blur-sm pointer-events-auto hover:bg-blue-600 transform hover:scale-105 transition-all"
+              className="bg-black/90 text-white rounded-full p-6 shadow-2xl backdrop-blur-sm pointer-events-auto hover:bg-black transform hover:scale-105 transition-all"
               onClick={(e) => { e.stopPropagation(); setPlaying(!playing); }}
             >
               {playing ? <Pause size={48} fill="currentColor" /> : <Play size={48} fill="currentColor" className="ml-2" />}
@@ -248,7 +248,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ url }) => {
               </span>
               <div className="relative flex-1 h-1.5 bg-white/30 rounded-full overflow-hidden group-hover/timeline:h-2 transition-all">
                 <div
-                  className="absolute top-0 left-0 bottom-0 bg-blue-500 rounded-full"
+                  className="absolute top-0 left-0 bottom-0 bg-[#fdf5e6] rounded-full"
                   style={{ width: `${played * 100}%` }}
                 ></div>
                 <input
