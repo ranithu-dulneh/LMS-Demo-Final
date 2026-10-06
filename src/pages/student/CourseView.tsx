@@ -254,7 +254,7 @@ const CourseView: React.FC = () => {
       <div className="flex-1 space-y-6 min-w-0">
         <div className="flex justify-between items-center">
           <div>
-            <Link to="/student/dashboard" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 mb-4 transition-colors">
+            <Link to="/student/dashboard" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#a67c00] mb-4 transition-colors">
               <ChevronLeft size={16} className="mr-1" /> Back to Dashboard
             </Link>
             <div className="flex items-center gap-3">
@@ -312,7 +312,7 @@ const CourseView: React.FC = () => {
               <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[600px] lg:min-h-0 flex flex-col">
                 <div className="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
                    <h3 className="font-semibold text-gray-700 flex items-center gap-2"><FileText size={18}/> Material Viewer</h3>
-                   <a href={activeMaterialUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">
+                   <a href={activeMaterialUrl} target="_blank" rel="noopener noreferrer" className="text-[#a67c00] hover:text-[#694d07] text-sm font-medium flex items-center gap-1">
                      <Download size={16} /> Download Original
                    </a>
                 </div>
@@ -338,13 +338,13 @@ const CourseView: React.FC = () => {
             <div className="flex border-b border-gray-200 px-6">
               <button
                 onClick={() => setActiveTab('materials')}
-                className={`flex items-center gap-2 py-4 px-2 mr-8 border-b-2 font-medium transition-colors ${activeTab === 'materials' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                className={`flex items-center gap-2 py-4 px-2 mr-8 border-b-2 font-medium transition-colors ${activeTab === 'materials' ? 'border-black text-[#a67c00]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
               >
                 <FileText size={18} /> Lesson Materials
               </button>
               <button
                 onClick={() => setActiveTab('discussion')}
-                className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium transition-colors ${activeTab === 'discussion' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium transition-colors ${activeTab === 'discussion' ? 'border-black text-[#a67c00]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
               >
                 <MessageSquare size={18} /> Q&A Discussion
               </button>
@@ -364,7 +364,7 @@ const CourseView: React.FC = () => {
                       return (
                         <div key={material.id} className="bg-white p-4 rounded-xl border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between hover:border-blue-300 transition-colors gap-4">
                           <div className="flex items-center gap-3 overflow-hidden">
-                            <div className="bg-blue-50 p-2 rounded-lg text-blue-600 flex-shrink-0">
+                            <div className="bg-[#fdf5e6] p-2 rounded-lg text-[#a67c00] flex-shrink-0">
                               <FileText size={24} />
                             </div>
                             <div className="min-w-0">
@@ -382,7 +382,7 @@ const CourseView: React.FC = () => {
                                  setActiveMaterialUrl(material.file_url);
                                  window.scrollTo({ top: 0, behavior: 'smooth' });
                                }}
-                               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeMaterialUrl === material.file_url ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeMaterialUrl === material.file_url ? 'bg-[#f0e6d2] text-[#8b6914]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                             >
                                <Eye size={16} /> View
                             </button>
@@ -390,7 +390,7 @@ const CourseView: React.FC = () => {
                               href={material.file_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#fdf5e6] text-[#8b6914] hover:bg-[#f0e6d2] rounded-lg text-sm font-medium transition-colors"
                             >
                               <Download size={16} /> Download
                             </a>
@@ -454,12 +454,12 @@ const CourseView: React.FC = () => {
                               key={session.id}
                               onClick={() => setActiveSession(session)}
                               className={`w-full text-left py-3 pl-12 pr-4 flex items-start gap-3 transition-colors ${
-                                activeSession?.id === session.id ? 'bg-blue-50 border-l-4 border-blue-600 pl-11' : 'hover:bg-gray-100 border-l-4 border-transparent'
+                                activeSession?.id === session.id ? 'bg-[#fdf5e6] border-l-4 border-black pl-11' : 'hover:bg-gray-100 border-l-4 border-transparent'
                               }`}
                             >
                               <div className="mt-0.5 flex-shrink-0">
                                 {activeSession?.id === session.id ? (
-                                  <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                                  <div className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center">
                                     <Play size={10} className="ml-0.5" />
                                   </div>
                                 ) : (

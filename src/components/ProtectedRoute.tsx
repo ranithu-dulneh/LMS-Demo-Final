@@ -40,7 +40,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requireAdmin = false })
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors w-full"
+            className="bg-black hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-xl transition-colors w-full"
           >
             Use This Device
           </button>
@@ -70,7 +70,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requireAdmin = false })
                </p>
                <button
                  onClick={() => window.location.href = '/'}
-                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors w-full"
+                 className="bg-black hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-xl transition-colors w-full"
                >
                  Return to Home
                </button>

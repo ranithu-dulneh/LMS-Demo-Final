@@ -115,7 +115,7 @@ const CourseManage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <Link to="/admin/courses" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 mb-4 transition-colors">
+        <Link to="/admin/courses" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#a67c00] mb-4 transition-colors">
           <ChevronLeft size={16} className="mr-1" /> Back to Courses
         </Link>
         <div className="flex justify-between items-end">
@@ -125,7 +125,7 @@ const CourseManage: React.FC = () => {
           </div>
           <button
             onClick={handleOpenNewLesson}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            className="bg-black hover:bg-gray-800 text-white px-5 py-2.5 rounded-lg font-medium flex items-center gap-2 transition-colors"
           >
             <Plus size={18} /> Add Lesson
           </button>
@@ -141,14 +141,14 @@ const CourseManage: React.FC = () => {
             <List className="h-12 w-12 text-gray-300 mb-4" />
             <p className="text-lg font-medium text-gray-900">No lessons added yet</p>
             <p className="text-sm mt-1 mb-6 max-w-sm">Start building this course by adding lessons, and then add sessions to those lessons.</p>
-            <button onClick={handleOpenNewLesson} className="text-blue-600 font-bold hover:underline">Add First Lesson</button>
+            <button onClick={handleOpenNewLesson} className="text-[#a67c00] font-bold hover:underline">Add First Lesson</button>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
             {lessons.map((lesson, index) => (
               <div key={lesson.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start gap-4 flex-1">
-                  <div className="bg-blue-50 text-blue-600 font-bold w-10 h-10 flex items-center justify-center rounded-lg flex-shrink-0">
+                  <div className="bg-[#fdf5e6] text-[#a67c00] font-bold w-10 h-10 flex items-center justify-center rounded-lg flex-shrink-0">
                     {index + 1}
                   </div>
                   <div>
@@ -160,7 +160,7 @@ const CourseManage: React.FC = () => {
                 <div className="flex items-center gap-3 w-full md:w-auto">
                   <button
                     onClick={() => setManagingSessionsForLesson(lesson)}
-                    className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#fdf5e6] hover:bg-[#f0e6d2] text-[#8b6914] px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
                     <Video size={16} /> Manage Sessions
                   </button>
@@ -196,7 +196,7 @@ const CourseManage: React.FC = () => {
                   placeholder="e.g. Unit 5 - Electromagnetism"
                   value={lessonFormData.title}
                   onChange={(e) => setLessonFormData({ ...lessonFormData, title: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#a67c00] outline-none"
                   required
                 />
               </div>
@@ -211,7 +211,7 @@ const CourseManage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-sm"
+                  className="flex-1 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-xl transition-colors shadow-sm"
                 >
                   {editingLesson ? 'Update Lesson' : 'Save Lesson'}
                 </button>

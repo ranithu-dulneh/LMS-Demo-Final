@@ -58,42 +58,42 @@ const HomePage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Theory Course */}
           <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-6">
+            <div className="w-12 h-12 bg-[#f0e6d2] text-[#a67c00] rounded-lg flex items-center justify-center mb-6">
               <BookOpen size={24} />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">Theory</h3>
             <p className="text-gray-600 mb-8 flex-grow">
               In-depth coverage of the entire syllabus from foundational principles to advanced concepts.
             </p>
-            <Link to="#" className="text-xs font-bold text-gray-800 tracking-wider uppercase hover:text-blue-600 transition-colors">
+            <Link to="#" className="text-xs font-bold text-gray-800 tracking-wider uppercase hover:text-[#a67c00] transition-colors">
               LEARN MORE
             </Link>
           </div>
 
           {/* Revision Course */}
           <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-6">
+            <div className="w-12 h-12 bg-[#f0e6d2] text-[#a67c00] rounded-lg flex items-center justify-center mb-6">
               <Settings size={24} />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">Revision</h3>
             <p className="text-gray-600 mb-8 flex-grow">
               Targeted review sessions focusing on high-yield topics and exam strategies.
             </p>
-            <Link to="#" className="text-xs font-bold text-gray-800 tracking-wider uppercase hover:text-blue-600 transition-colors">
+            <Link to="#" className="text-xs font-bold text-gray-800 tracking-wider uppercase hover:text-[#a67c00] transition-colors">
               LEARN MORE
             </Link>
           </div>
 
           {/* Paper Class Course */}
           <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-6">
+            <div className="w-12 h-12 bg-[#f0e6d2] text-[#a67c00] rounded-lg flex items-center justify-center mb-6">
               <FileText size={24} />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">Paper Class</h3>
             <p className="text-gray-600 mb-8 flex-grow">
               Rigorous practice with past papers and model questions under simulated exam conditions.
             </p>
-            <Link to="#" className="text-xs font-bold text-gray-800 tracking-wider uppercase hover:text-blue-600 transition-colors">
+            <Link to="#" className="text-xs font-bold text-gray-800 tracking-wider uppercase hover:text-[#a67c00] transition-colors">
               LEARN MORE
             </Link>
           </div>

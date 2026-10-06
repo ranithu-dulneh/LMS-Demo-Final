@@ -41,15 +41,20 @@ const LoginPage: React.FC = () => {
 
       navigate('/student/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password.');
+      if (err.message === 'Failed to fetch') {
+        setError('Network error: Failed to fetch. Please check your internet connection or verify that the Supabase API URL is correctly configured and reachable.');
+      } else {
+        setError(err.message || 'Invalid email or password.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto w-full mt-10">
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+    <div className="fixed inset-0 pt-16 flex justify-center items-center bg-gradient-to-br from-[#eef2ff] via-[#f8fafc] to-[#e0efff] z-0 overflow-y-auto">
+      <div className="max-w-md w-full px-4 mb-16 relative z-10">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
         <div className="p-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
@@ -73,7 +78,7 @@ const LoginPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 focus:bg-white"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#a67c00] focus:border-[#a67c00] transition-colors bg-gray-50 focus:bg-white"
                   placeholder="you@example.com"
                   required
                 />
@@ -90,7 +95,7 @@ const LoginPage: React.FC = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 focus:bg-white"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#a67c00] focus:border-[#a67c00] transition-colors bg-gray-50 focus:bg-white"
                   placeholder="••••••••"
                   required
                 />
@@ -99,25 +104,26 @@ const LoginPage: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <input id="remember-me" type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                <input id="remember-me" type="checkbox" className="h-4 w-4 text-[#a67c00] focus:ring-[#a67c00] border-gray-300 rounded" />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">Remember me</label>
               </div>
-              <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-500">Forgot password?</a>
+              <a href="#" className="text-sm font-medium text-[#a67c00] hover:text-[#8b6914]">Forgot password?</a>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a67c00] transition-colors disabled:opacity-50"
             >
               {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
         </div>
-        <div className="bg-gray-50 px-8 py-4 border-t border-gray-100 text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account? <Link to="/signup" className="font-bold text-blue-600 hover:text-blue-500">Sign Up</Link>
-          </p>
+          <div className="bg-gray-50 px-8 py-4 border-t border-gray-100 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account? <Link to="/signup" className="font-bold text-[#a67c00] hover:text-yellow-700">Sign Up</Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

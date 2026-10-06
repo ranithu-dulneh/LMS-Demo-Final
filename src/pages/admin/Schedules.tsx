@@ -8,7 +8,7 @@ const AdminSchedules: React.FC = () => {
         <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
           <Calendar size={24} className="text-orange-600" /> Manage Schedules
         </h2>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm transition-colors">
+        <button className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm transition-colors">
           <Plus size={16} /> Add Event
         </button>
       </div>
@@ -23,7 +23,7 @@ const AdminSchedules: React.FC = () => {
               <h4 className="font-bold text-gray-900">Live Q&A Session - Revision</h4>
               <p className="text-sm text-gray-500">8:00 PM - 10:00 PM • Zoom</p>
             </div>
-            <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</button>
+            <button className="text-[#a67c00] hover:text-[#694d07] text-sm font-medium">Edit</button>
           </div>
         ))}
       </div>

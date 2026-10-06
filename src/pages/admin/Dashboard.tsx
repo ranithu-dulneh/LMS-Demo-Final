@@ -62,7 +62,7 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Link to="/admin/students?filter=All" className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow group">
           <div className="flex items-center gap-4">
-            <div className="bg-blue-100 group-hover:bg-blue-600 transition-colors p-3 rounded-xl text-blue-600 group-hover:text-white"><Users size={24} /></div>
+            <div className="bg-[#f0e6d2] group-hover:bg-black transition-colors p-3 rounded-xl text-[#a67c00] group-hover:text-white"><Users size={24} /></div>
             <div>
               <p className="text-sm text-gray-500 font-medium">Total Registered</p>
               <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>

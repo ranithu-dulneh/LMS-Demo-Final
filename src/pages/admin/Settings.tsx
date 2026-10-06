@@ -24,7 +24,7 @@ const AdminSettings: React.FC = () => {
           </div>
         </div>
         <div>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors">Save Changes</button>
+          <button className="bg-black hover:bg-gray-800 text-white px-6 py-2.5 rounded-lg font-medium transition-colors">Save Changes</button>
         </div>
       </div>
     </div>

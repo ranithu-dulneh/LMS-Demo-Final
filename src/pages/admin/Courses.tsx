@@ -138,7 +138,7 @@ const AdminCourses: React.FC = () => {
 
           <button
             onClick={handleOpenNew}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm transition-colors whitespace-nowrap"
+            className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm transition-colors whitespace-nowrap"
           >
             <Plus size={16} /> New Course
           </button>
@@ -199,7 +199,7 @@ const AdminCourses: React.FC = () => {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#a67c00] outline-none"
                   required
                 />
               </div>
@@ -211,7 +211,7 @@ const AdminCourses: React.FC = () => {
                     placeholder="e.g. 2026"
                     value={formData.exam_year}
                     onChange={(e) => setFormData({ ...formData, exam_year: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#a67c00] outline-none"
                     required
                   />
                 </div>
@@ -222,7 +222,7 @@ const AdminCourses: React.FC = () => {
                     min={0}
                     value={formData.lessons}
                     onChange={(e) => setFormData({ ...formData, lessons: parseInt(e.target.value) || 0 })}
-                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#a67c00] outline-none"
                     required
                   />
                 </div>
@@ -233,7 +233,7 @@ const AdminCourses: React.FC = () => {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Active' | 'Draft' })}
-                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#a67c00] outline-none"
                   >
                     <option value="Active">Active</option>
                     <option value="Draft">Draft</option>
@@ -244,7 +244,7 @@ const AdminCourses: React.FC = () => {
                   <select
                     value={formData.visibility}
                     onChange={(e) => setFormData({ ...formData, visibility: e.target.value as 'assignable' | 'public' })}
-                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#a67c00] outline-none"
                   >
                     <option value="assignable">Assignable (Invite Only)</option>
                     <option value="public">Public (Purchase List)</option>
@@ -261,7 +261,7 @@ const AdminCourses: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors"
+                  className="flex-1 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-xl transition-colors"
                 >
                   Save Course
                 </button>

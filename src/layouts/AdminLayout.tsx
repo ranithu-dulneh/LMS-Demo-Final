@@ -31,7 +31,7 @@ const AdminLayout: React.FC = () => {
                 to={item.path}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-black text-white'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                 }`}
               >
@@ -58,7 +58,7 @@ const AdminLayout: React.FC = () => {
             {navItems.find(item => item.path === location.pathname)?.name || 'Admin Panel'}
           </h1>
           <div className="flex items-center gap-4">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
+            <div className="w-8 h-8 rounded-full bg-[#f0e6d2] flex items-center justify-center text-[#8b6914] font-bold">
               A
             </div>
           </div>
