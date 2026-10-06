@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogIn, Menu, User, LogOut, ChevronDown, Book } from 'lucide-react';
+import { Menu, User, LogOut, ChevronDown, Book } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -57,10 +57,7 @@ const MainLayout: React.FC = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link to="/" className="flex items-center gap-2">
-                <div className="bg-blue-600 p-2 rounded-lg">
-                  <BookOpen className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xl font-bold text-gray-900">DM Education</span>
+                <img src="/inspire-logo.png" alt="Inspire Institute Logo" className="h-10 w-auto" />
               </Link>
             </div>
 
@@ -72,9 +69,8 @@ const MainLayout: React.FC = () => {
 
             <div className="flex items-center">
               {!user ? (
-                <Link to="/login" className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-medium transition-colors shadow-sm">
-                  <LogIn className="h-4 w-4" />
-                  <span>Login</span>
+                <Link to="/login" className="hidden md:flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 px-5 py-2 rounded-md font-medium transition-colors shadow-sm text-sm">
+                  <span>LMS Login</span>
                 </Link>
               ) : (
                 <div className="relative" ref={menuRef}>
@@ -144,9 +140,9 @@ const MainLayout: React.FC = () => {
         <Outlet />
       </main>
 
-      <footer className="bg-white border-t border-gray-200 py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
-          <p>&copy; {new Date().getFullYear()} DM Education. All rights reserved.</p>
+      <footer className="bg-[#e0efff] py-8 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600 text-sm">
+          <p>&copy; 2024 Inspire Institute. All rights reserved.</p>
         </div>
       </footer>
     </div>
