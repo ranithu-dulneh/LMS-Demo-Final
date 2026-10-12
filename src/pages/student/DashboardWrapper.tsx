@@ -13,7 +13,6 @@ const DashboardWrapper: React.FC = () => {
     // with actual ones fetched from the database, similar to original Dashboard.tsx.
 
     const [realCourses, setRealCourses] = useState<any[]>([]);
-    const [realVideos, setRealVideos] = useState<any[]>([]);
 
     useEffect(() => {
         if (authUser) {
@@ -101,34 +100,6 @@ const DashboardWrapper: React.FC = () => {
           }
 
           setRealCourses(mappedData);
-
-          // --- Fetch real sessions for the My Lessons / Videos view ---
-          if (accessibleCourses.length > 0) {
-              const accessibleCourseIds = accessibleCourses.map(c => c.id);
-              const { data: allSessions } = await supabase
-                .from('sessions')
-                .select('id, title, description, video_url, created_at, lessons!inner(title, course_id)')
-                .in('lessons.course_id', accessibleCourseIds)
-                .order('created_at', { ascending: false });
-
-              if (allSessions) {
-                  const mappedVideos = allSessions.map((s: any) => ({
-                      id: "real-session-" + s.id,
-                      title: s.title,
-                      subtitle: s.lessons?.title || 'Lesson',
-                      description: s.description || 'Session loaded from database',
-                      duration: 'On-Demand',
-                      date: new Date(s.created_at).toLocaleDateString(),
-                      topic: s.lessons?.title || 'General',
-                      thumbnailGradient: 'from-blue-600/30 to-indigo-600/20',
-                      chapters: [],
-                      notesSummary: [],
-                      video_url: s.video_url, // passing original url just in case
-                      course_id: s.lessons?.course_id // useful for navigation
-                  }));
-                  setRealVideos(mappedVideos);
-              }
-          }
         } catch (err: any) {
           console.error(err);
         }
@@ -153,11 +124,7 @@ const DashboardWrapper: React.FC = () => {
     return (
         <LMSDashboard
             currentUser={currentUser}
-            onSelectVideo={(video) => {
-                if ((video as any).course_id) {
-                    navigate('/student/course/' + (video as any).course_id);
-                }
-            }}
+            onSelectVideo={() => {}}
             onSelectPaper={() => {}}
             onAddToCart={() => {}}
             onNavigate={(tab: string) => {
@@ -171,7 +138,6 @@ const DashboardWrapper: React.FC = () => {
                 else if (tab === 'results') navigate('/results');
             }}
             overrideCourses={realCourses}
-            overrideVideos={realVideos}
         />
     )
 }
