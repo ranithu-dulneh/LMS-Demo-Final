@@ -1,150 +1,199 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Menu, User, LogOut, ChevronDown, Book } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Navbar } from '../components/Navbar';
+import { MobileBottomNav } from '../components/MobileBottomNav';
+import { InspireLogo } from '../components/InspireLogo';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import { ActiveTab, CurrentUser } from '../types';
+
+import { SearchModal } from '../components/SearchModal';
+import { CartDrawer } from '../components/CartDrawer';
+import { InstitutionSelectModal } from '../components/InstitutionSelectModal';
+import { EnrollmentModal } from '../components/EnrollmentModal';
+import { AdminPanelModal } from '../components/AdminPanelModal';
+
+import { pastPapersData, videoModulesData, studyMaterialsData } from '../data/mockData';
 
 const MainLayout: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user: authUser, signOut } = useAuth();
   const navigate = useNavigate();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [courses, setCourses] = useState<any[]>([]);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
+  // Navigation state mapped from React Router path
+  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   useEffect(() => {
-    if (user) {
-      fetchUserCourses();
-    }
-  }, [user]);
+    const path = location.pathname;
+    if (path === '/') setActiveTab('home');
+    else if (path === '/login') setActiveTab('login');
+    else if (path.startsWith('/student/dashboard') || path.startsWith('/student/course')) setActiveTab('lms');
+    else if (path === '/past-papers') setActiveTab('past-papers');
+    else if (path === '/videos') setActiveTab('videos');
+    else if (path === '/store') setActiveTab('store');
+    else if (path === '/results') setActiveTab('results');
+  }, [location]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowProfileMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const fetchUserCourses = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select('id, title')
-        .eq('status', 'Active')
-        .order('id', { ascending: false })
-        .limit(5); // Show top 5 recent courses
-
-      if (!error && data) {
-        setCourses(data);
-      }
-    } catch (err) {
-      console.error("Error fetching courses for menu", err);
-    }
+  const handleNavigate = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (tab === 'home') navigate('/');
+    else if (tab === 'login') navigate('/login');
+    else if (tab === 'lms') navigate('/student/dashboard');
+    else if (tab === 'past-papers') navigate('/past-papers');
+    else if (tab === 'videos') navigate('/videos');
+    else if (tab === 'store') navigate('/store');
+    else if (tab === 'results') navigate('/results');
   };
 
-  const handleSignOut = async () => {
+  // Convert authUser to match the expected UserProfile mock in the UI
+  const currentUser: CurrentUser | null = authUser ? {
+    id: authUser.id,
+    name: authUser.user_metadata?.full_name || 'Student',
+    indexNumber: authUser.user_metadata?.student_id || 'ID-TBD',
+    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop',
+    role: 'Student',
+    batch: '2024',
+    overallProgress: 0,
+    email: authUser.email || '',
+    phone: ''
+  } : null;
+
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const [institutionSelectOpen, setInstitutionSelectOpen] = useState(false);
+  const [enrollmentModalOpen, setEnrollmentModalOpen] = useState(false);
+  const [adminPanelOpen, setAdminPanelOpen] = useState(false);
+
+  // Cart State (Mock)
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+  const [selectedInstitution, setSelectedInstitution] = useState<any>(null);
+
+  const handleLogout = async () => {
     await signOut();
-    setShowProfileMenu(false);
     navigate('/');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link to="/" className="flex items-center gap-2">
-                <img src="/inspire-logo.png" alt="Inspire Institute Logo" className="h-10 w-auto" />
-              </Link>
-            </div>
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-200 selection:text-blue-900 flex flex-col relative">
 
-            <div className="hidden md:flex items-center space-x-8">
-              <Link to="/" className="text-gray-600 hover:text-[#a67c00] transition-colors font-medium">Home</Link>
-              {user && <Link to="/student/dashboard" className="text-gray-600 hover:text-[#a67c00] transition-colors font-medium">Student Dashboard</Link>}
-              {user?.is_admin && <Link to="/admin" className="text-gray-600 hover:text-[#a67c00] transition-colors font-medium">Admin Panel</Link>}
-            </div>
+      {/* Ambient Background matching App.tsx */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none apple-bg-ambient overflow-hidden"
+        aria-hidden="true"
+      >
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-300/20 rounded-full blur-[120px] -translate-y-1/2" />
+        <div className="absolute top-1/3 right-10 w-[500px] h-[500px] bg-sky-200/25 rounded-full blur-[100px]" />
+        <div className="absolute bottom-10 left-1/3 w-[650px] h-[650px] bg-blue-200/20 rounded-full blur-[140px]" />
+      </div>
 
-            <div className="flex items-center">
-              {!user ? (
-                <Link to="/login" className="hidden md:flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 px-5 py-2 rounded-md font-medium transition-colors shadow-sm text-sm">
-                  <span>LMS Login</span>
-                </Link>
-              ) : (
-                <div className="relative" ref={menuRef}>
-                  <button
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full font-medium transition-colors border border-gray-200"
-                  >
-                    <div className="bg-[#f0e6d2] text-[#8b6914] p-1.5 rounded-full">
-                      <User className="h-4 w-4" />
-                    </div>
-                    <span className="hidden md:block max-w-[100px] truncate text-sm">
-                      {user.user_metadata?.full_name || 'Profile'}
-                    </span>
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                  </button>
+      <Navbar
+        activeTab={activeTab}
+        onNavigate={handleNavigate}
+        currentUser={currentUser}
+        onOpenSearch={() => setSearchModalOpen(true)}
+        onOpenCart={() => setCartDrawerOpen(true)}
+        cartCount={totalCartCount}
+        onOpenSignUp={() => setInstitutionSelectOpen(true)}
+        onOpenLogin={() => handleNavigate('login')}
+        onLogout={handleLogout}
+      />
 
-                  {/* Dropdown Menu */}
-                  {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 z-50">
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-bold text-gray-900">{user.user_metadata?.full_name || 'Student'}</p>
-                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                      </div>
-
-                      <div className="py-2 px-3">
-                        <p className="text-xs font-bold text-gray-400 uppercase mb-2 px-2">Your Courses</p>
-                        {courses.length > 0 ? (
-                          courses.map(c => (
-                            <Link
-                              key={c.id}
-                              to={`/student/course/${c.id}`}
-                              onClick={() => setShowProfileMenu(false)}
-                              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#fdf5e6] hover:text-[#8b6914] rounded-lg transition-colors"
-                            >
-                              <Book className="h-4 w-4 flex-shrink-0" />
-                              <span className="truncate">{c.title}</span>
-                            </Link>
-                          ))
-                        ) : (
-                          <div className="px-3 py-2 text-xs text-gray-500 italic">No active courses.</div>
-                        )}
-                      </div>
-
-                      <div className="border-t border-gray-100 pt-2 px-3">
-                        <button
-                          onClick={handleSignOut}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Sign Out
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <button className="md:hidden ml-4 p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none">
-                <Menu className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 md:pt-6 relative z-10">
         <Outlet />
       </main>
 
-      <footer className="bg-[#e0efff] py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600 text-sm">
-          <p>&copy; 2024 Inspire Institute. All rights reserved.</p>
+      <footer className="w-full border-t border-slate-200/70 bg-white/60 backdrop-blur-xl mt-12 py-10 px-4 sm:px-6 lg:px-8 text-xs text-slate-500 relative z-10">
+        <div className="max-w-[1600px] 2xl:max-w-[1720px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <InspireLogo size="md" />
+            <div className="border-l border-slate-200 pl-3 text-left">
+              <p className="font-bold text-slate-900">Inspire Institution</p>
+              <p className="text-[11px] text-slate-400">Department of Examination Certified A/L Curriculum</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-6 text-slate-600 font-medium">
+            {currentUser ? (
+              <>
+                <button onClick={() => handleNavigate('home')} className="hover:text-blue-700 transition-colors">Home</button>
+                <button onClick={() => handleNavigate('lms')} className="hover:text-blue-700 transition-colors">LMS Dashboard</button>
+                <button onClick={() => handleNavigate('past-papers')} className="hover:text-blue-700 transition-colors">Past Papers</button>
+                <button onClick={() => handleNavigate('videos')} className="hover:text-blue-700 transition-colors">Lectures</button>
+                <button onClick={() => handleNavigate('store')} className="hover:text-blue-700 transition-colors">Study Store</button>
+                <button onClick={() => handleNavigate('results')} className="hover:text-blue-700 transition-colors">Wall of Fame</button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => handleNavigate('home')} className="hover:text-blue-700 transition-colors">Home</button>
+                <button onClick={() => handleNavigate('past-papers')} className="hover:text-blue-700 transition-colors">Past Papers</button>
+                <button onClick={() => handleNavigate('videos')} className="hover:text-blue-700 transition-colors">Video Modules</button>
+                <button onClick={() => handleNavigate('results')} className="hover:text-blue-700 transition-colors">Wall of Fame</button>
+                <button onClick={() => handleNavigate('store')} className="hover:text-blue-700 transition-colors">Study Store</button>
+                <button onClick={() => setInstitutionSelectOpen(true)} className="hover:text-blue-700 transition-colors">Institutes</button>
+                <button onClick={() => handleNavigate('login')} className="hover:text-blue-700 transition-colors">Student Login</button>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+            <span>© {new Date().getFullYear()} Inspire Institution. All rights reserved.</span>
+            {authUser?.is_admin && (
+                <button
+                onClick={() => navigate('/admin')}
+                className="text-slate-500 hover:text-slate-800 font-semibold underline transition-colors"
+                >
+                Admin Portal
+                </button>
+            )}
+          </div>
         </div>
       </footer>
+
+      <MobileBottomNav
+        activeTab={activeTab}
+        onNavigate={handleNavigate}
+        cartCount={totalCartCount}
+        isLoggedIn={Boolean(currentUser)}
+        onOpenLogin={() => handleNavigate('login')}
+      />
+
+      <InstitutionSelectModal
+        isOpen={institutionSelectOpen}
+        onClose={() => setInstitutionSelectOpen(false)}
+        onSelectInstitute={(inst) => {
+          setSelectedInstitution(inst);
+          setInstitutionSelectOpen(false);
+          setEnrollmentModalOpen(true);
+        }}
+      />
+
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        pastPapers={pastPapersData}
+        videos={videoModulesData}
+        materials={studyMaterialsData}
+        onSelectPaper={(p) => {
+          // Add handling to navigate / show paper
+        }}
+        onSelectVideo={(v) => {
+          // Add handling
+        }}
+        onSelectMaterial={(m) => {
+          // handleAddToCart(m);
+        }}
+      />
+
+      <EnrollmentModal
+        isOpen={enrollmentModalOpen}
+        onClose={() => setEnrollmentModalOpen(false)}
+        selectedInstitute={selectedInstitution}
+        onChangeInstitute={() => {
+          setEnrollmentModalOpen(false);
+          setInstitutionSelectOpen(true);
+        }}
+      />
     </div>
   );
 };
