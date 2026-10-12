@@ -25,14 +25,29 @@ const LoginPageWrapper: React.FC = () => {
     // This overrides the mock login behavior inside the StudentLoginPortal
     const handleRealLogin = async (identifier: string, pass: string) => {
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email: identifier, // Assuming identifier is mapped to email for now, or users enter email
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: identifier,
                 password: pass,
             });
 
             if (error) throw error;
+
+            // Check if admin
+            if (data.user) {
+                const { data: adminData } = await supabase
+                    .from('admin_users')
+                    .select('id')
+                    .eq('user_id', data.user.id)
+                    .limit(1);
+
+                if (adminData && adminData.length > 0) {
+                    navigate('/admin');
+                    return null;
+                }
+            }
+
             navigate('/student/dashboard');
-            return null; // Return null error on success
+            return null;
         } catch (err: any) {
             let errorMsg = err.message || 'Invalid credentials.';
             if (err.message === 'Failed to fetch') {

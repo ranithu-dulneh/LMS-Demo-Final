@@ -37,6 +37,7 @@ interface LMSDashboardProps {
   onAddToCart: (material: StudyMaterial) => void;
   onNavigate: (tab: any) => void;
   overrideCourses?: any[];
+  overrideVideos?: VideoModule[];
 }
 
 type LMSSidebarItem =
@@ -70,7 +71,8 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
   onSelectPaper,
   onAddToCart,
   onNavigate,
-  overrideCourses
+  overrideCourses,
+  overrideVideos
 }) => {
   const [activeSidebar, setActiveSidebar] = useState<LMSSidebarItem>('my-lessons');
   const [sidebarSearch, setSidebarSearch] = useState<string>('');
@@ -356,7 +358,8 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
   // Filter lessons for my-lessons based on sidebar search and selected topic
   const filteredVideoLessons = useMemo(() => {
-    return videoModulesData.filter((item) => {
+    const sourceData = overrideVideos && overrideVideos.length > 0 ? overrideVideos : videoModulesData;
+    return sourceData.filter((item) => {
       const matchesSearch =
         item.title.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
         item.topic.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
@@ -419,7 +422,8 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
   // Filtered Video Modules for LMS catalog view
   const filteredCatalogVideos = useMemo(() => {
-    return videoModulesData.filter((video) => {
+    const sourceData = overrideVideos && overrideVideos.length > 0 ? overrideVideos : videoModulesData;
+    return sourceData.filter((video) => {
       const matchesSearch =
         video.title.toLowerCase().includes(videoSearch.toLowerCase()) ||
         video.topic.toLowerCase().includes(videoSearch.toLowerCase()) ||
