@@ -37,6 +37,7 @@ interface LMSDashboardProps {
   onAddToCart: (material: StudyMaterial) => void;
   onNavigate: (tab: any) => void;
   overrideCourses?: any[];
+  overrideMyLessons?: VideoModule[];
 }
 
 type LMSSidebarItem =
@@ -70,7 +71,8 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
   onSelectPaper,
   onAddToCart,
   onNavigate,
-  overrideCourses
+  overrideCourses,
+  overrideMyLessons
 }) => {
   const [activeSidebar, setActiveSidebar] = useState<LMSSidebarItem>('my-lessons');
   const [sidebarSearch, setSidebarSearch] = useState<string>('');
@@ -356,7 +358,8 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
   // Filter lessons for my-lessons based on sidebar search and selected topic
   const filteredVideoLessons = useMemo(() => {
-    return videoModulesData.filter((item) => {
+    const dataSource = (overrideMyLessons && overrideMyLessons.length > 0) ? overrideMyLessons : videoModulesData;
+    return dataSource.filter((item) => {
       const matchesSearch =
         item.title.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
         item.topic.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
@@ -368,7 +371,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
       return matchesSearch && matchesTopic;
     });
-  }, [sidebarSearch, selectedTopicFilter]);
+  }, [sidebarSearch, selectedTopicFilter, overrideMyLessons]);
 
   // Download simulator for past papers inside LMS
   const handleDownloadPaper = (paper: PastPaper) => {

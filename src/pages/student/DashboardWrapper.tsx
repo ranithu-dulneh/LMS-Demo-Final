@@ -3,7 +3,7 @@ import { LMSDashboard } from '../../components/LMSDashboard';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { CurrentUser } from '../../types';
+import { CurrentUser, VideoModule } from '../../types';
 
 const DashboardWrapper: React.FC = () => {
     const { user: authUser } = useAuth();
@@ -13,11 +13,13 @@ const DashboardWrapper: React.FC = () => {
     // with actual ones fetched from the database, similar to original Dashboard.tsx.
 
     const [realCourses, setRealCourses] = useState<any[]>([]);
+    const [myLessons, setMyLessons] = useState<VideoModule[]>([]);
 
     useEffect(() => {
         if (authUser) {
             fetchCourses();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authUser]);
 
     const fetchCourses = async () => {
@@ -82,7 +84,7 @@ const DashboardWrapper: React.FC = () => {
              mappedData = accessibleCourses.map((c: any) => {
                const totalSessions = courseSessionTotals[c.id] || 0;
                const completedSessions = completedCounts[c.id] || 0;
-               const progressPercentage = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+
 
                return {
                  id: "real-" + c.id.toString(),
@@ -99,8 +101,67 @@ const DashboardWrapper: React.FC = () => {
              });
           }
 
+
           setRealCourses(mappedData);
+
+          // Now fetch uncompleted sessions for "My Lessons"
+          if (accessibleCourses.length > 0) {
+              const courseIds = accessibleCourses.map(c => c.id);
+
+              // Get all sessions for accessible courses
+              const { data: sessionsData, error: sessionsError } = await supabase
+                  .from('sessions')
+                  .select('id, title, created_at, price, lesson_id, lessons!inner(title, course_id, courses!inner(title, exam_year))')
+                  .in('lessons.course_id', courseIds)
+                  .order('created_at', { ascending: false });
+
+              if (!sessionsError && sessionsData) {
+                  // Filter out completed sessions based on progressData
+                  const completedSessionIds = new Set();
+                  if (authUser) {
+                      const { data: pData } = await supabase
+                          .from('student_progress')
+                          .select('session_id')
+                          .eq('user_id', authUser.id)
+                          .in('course_id', courseIds);
+                      if (pData) {
+                          pData.forEach(p => completedSessionIds.add(p.session_id));
+                      }
+                  }
+
+                  const uncompletedSessions = sessionsData.filter(s => !completedSessionIds.has(s.id));
+
+
+                  const mappedLessons: VideoModule[] = uncompletedSessions.map(s => {
+                      // Handle potential array or object format from PostgREST join
+                      const lessonObj = Array.isArray(s.lessons) ? s.lessons[0] : s.lessons;
+                      const courseObj = lessonObj ? (Array.isArray(lessonObj.courses) ? lessonObj.courses[0] : lessonObj.courses) : null;
+
+                      const courseTitle = courseObj?.title || 'Course';
+                      const lessonTitle = lessonObj?.title || 'Lesson';
+
+                      return {
+                          id: `session-${s.id}`,
+                          title: s.title,
+                          subtitle: lessonTitle,
+                          description: `Part of ${courseTitle}`,
+                          duration: '45 mins', // Placeholder as we don't have this in DB currently
+                          date: new Date(s.created_at).toLocaleDateString(),
+                          month: new Date(s.created_at).toLocaleString('default', { month: 'long' }),
+                          topic: courseTitle,
+                          thumbnailGradient: 'from-blue-900 via-slate-900 to-indigo-950', // Default gradient
+                          chapters: [],
+                          notesSummary: []
+                      };
+                  });
+
+
+                  setMyLessons(mappedLessons);
+              }
+          }
+
         } catch (err: any) {
+
           console.error(err);
         }
     };
@@ -138,6 +199,7 @@ const DashboardWrapper: React.FC = () => {
                 else if (tab === 'results') navigate('/results');
             }}
             overrideCourses={realCourses}
+            overrideMyLessons={myLessons}
         />
     )
 }
