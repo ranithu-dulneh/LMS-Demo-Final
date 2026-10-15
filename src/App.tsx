@@ -4,6 +4,7 @@ import AdminLayout from './layouts/AdminLayout';
 
 import LandingPageWrapper from './pages/LandingPageWrapper';
 import LoginPageWrapper from './pages/LoginPageWrapper';
+import SignupPage from './pages/SignupPage';
 import DashboardWrapper from './pages/student/DashboardWrapper';
 import CourseView from './pages/student/CourseView';
 
@@ -30,7 +31,7 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<LandingPageWrapper />} />
             <Route path="login" element={<LoginPageWrapper />} />
-            <Route path="signup" element={<LoginPageWrapper />} />
+            <Route path="signup" element={<SignupPage />} />
             <Route path="past-papers" element={<PastPapersWrapper />} />
             <Route path="videos" element={<VideosWrapper />} />
             <Route path="store" element={<StoreWrapper />} />
