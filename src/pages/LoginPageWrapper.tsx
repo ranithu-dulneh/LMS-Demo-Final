@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { StudentLoginPortal } from '../components/StudentLoginPortal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginPageWrapper: React.FC = () => {
     const navigate = useNavigate();
+    const { openSignup } = useOutletContext<{ openSignup: () => void }>();
     const { deviceError } = useAuth();
     const [authError, setAuthError] = useState('');
 
@@ -54,7 +55,7 @@ const LoginPageWrapper: React.FC = () => {
                 else if (tab === 'store') navigate('/store');
                 else if (tab === 'results') navigate('/results');
             }}
-            onOpenSignUp={() => {}}
+            onOpenSignUp={openSignup}
             overrideLogin={handleRealLogin}
             externalError={authError}
         />

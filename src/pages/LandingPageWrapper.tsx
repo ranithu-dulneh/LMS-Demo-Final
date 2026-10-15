@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { LandingPage } from '../components/LandingPage';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 const initialResultsData: any[] = [];
 
 const LandingPageWrapper: React.FC = () => {
     const navigate = useNavigate();
+    const { openSignup } = useOutletContext<{ openSignup: () => void }>();
 
     return (
         <LandingPage
@@ -17,7 +18,7 @@ const LandingPageWrapper: React.FC = () => {
                 else if (tab === 'store') navigate('/store');
                 else if (tab === 'results') navigate('/results');
             }}
-            onOpenEnrollment={() => {}}
+            onOpenEnrollment={openSignup}
             onOpenLogin={() => navigate('/login')}
             onSelectRanker={() => {}}
             resultsData={initialResultsData}
