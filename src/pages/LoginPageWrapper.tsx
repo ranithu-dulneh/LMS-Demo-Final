@@ -3,11 +3,16 @@ import { StudentLoginPortal } from '../components/StudentLoginPortal';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { InstitutionSelectModal } from '../components/InstitutionSelectModal';
+import { EnrollmentModal } from '../components/EnrollmentModal';
 
 const LoginPageWrapper: React.FC = () => {
     const navigate = useNavigate();
     const { deviceError } = useAuth();
     const [authError, setAuthError] = useState('');
+    const [institutionSelectOpen, setInstitutionSelectOpen] = useState(false);
+    const [enrollmentModalOpen, setEnrollmentModalOpen] = useState(false);
+    const [selectedInstitution, setSelectedInstitution] = useState<any>(null);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -43,21 +48,43 @@ const LoginPageWrapper: React.FC = () => {
     };
 
     return (
-        <StudentLoginPortal
-            selectedInstitute={null}
-            onNavigate={(tab) => {
-                if (tab === 'home') navigate('/');
-                else if (tab === 'login') navigate('/login');
-                else if (tab === 'lms') navigate('/student/dashboard');
-                else if (tab === 'past-papers') navigate('/past-papers');
-                else if (tab === 'videos') navigate('/videos');
-                else if (tab === 'store') navigate('/store');
-                else if (tab === 'results') navigate('/results');
-            }}
-            onOpenSignUp={() => {}}
-            overrideLogin={handleRealLogin}
-            externalError={authError}
-        />
+        <>
+            <StudentLoginPortal
+                selectedInstitute={null}
+                onNavigate={(tab) => {
+                    if (tab === 'home') navigate('/');
+                    else if (tab === 'login') navigate('/login');
+                    else if (tab === 'lms') navigate('/student/dashboard');
+                    else if (tab === 'past-papers') navigate('/past-papers');
+                    else if (tab === 'videos') navigate('/videos');
+                    else if (tab === 'store') navigate('/store');
+                    else if (tab === 'results') navigate('/results');
+                }}
+                onOpenSignUp={() => setInstitutionSelectOpen(true)}
+                overrideLogin={handleRealLogin}
+                externalError={authError}
+            />
+
+            <InstitutionSelectModal
+                isOpen={institutionSelectOpen}
+                onClose={() => setInstitutionSelectOpen(false)}
+                onSelectInstitute={(inst) => {
+                    setSelectedInstitution(inst);
+                    setInstitutionSelectOpen(false);
+                    setEnrollmentModalOpen(true);
+                }}
+            />
+
+            <EnrollmentModal
+                isOpen={enrollmentModalOpen}
+                onClose={() => setEnrollmentModalOpen(false)}
+                selectedInstitute={selectedInstitution}
+                onChangeInstitute={() => {
+                    setEnrollmentModalOpen(false);
+                    setInstitutionSelectOpen(true);
+                }}
+            />
+        </>
     )
 }
 export default LoginPageWrapper;
