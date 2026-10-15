@@ -83,7 +83,7 @@ const DashboardWrapper: React.FC = () => {
 
              mappedData = accessibleCourses.map((c: any) => {
                const totalSessions = courseSessionTotals[c.id] || 0;
-               const completedSessions = completedCounts[c.id] || 0;
+
 
 
                return {
