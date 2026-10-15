@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StudentLoginPortal } from '../components/StudentLoginPortal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { InstitutionSelectModal } from '../components/InstitutionSelectModal';
@@ -8,6 +8,7 @@ import { EnrollmentModal } from '../components/EnrollmentModal';
 
 const LoginPageWrapper: React.FC = () => {
     const navigate = useNavigate();
+    const { openSignup } = useOutletContext<{ openSignup: () => void }>();
     const { deviceError } = useAuth();
     const [authError, setAuthError] = useState('');
     const [institutionSelectOpen, setInstitutionSelectOpen] = useState(false);

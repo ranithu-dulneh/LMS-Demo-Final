@@ -27,13 +27,22 @@ ALTER TABLE public.intake_batches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.mediums ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public read access to institutions" ON public.institutions FOR SELECT USING (true);
-CREATE POLICY "Allow admin write access to institutions" ON public.institutions FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow admin write access to institutions" ON public.institutions FOR ALL USING (
+    auth.role() = 'authenticated' AND
+    EXISTS (SELECT 1 FROM public.admin_users WHERE user_id = auth.uid())
+);
 
 CREATE POLICY "Allow public read access to intake_batches" ON public.intake_batches FOR SELECT USING (true);
-CREATE POLICY "Allow admin write access to intake_batches" ON public.intake_batches FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow admin write access to intake_batches" ON public.intake_batches FOR ALL USING (
+    auth.role() = 'authenticated' AND
+    EXISTS (SELECT 1 FROM public.admin_users WHERE user_id = auth.uid())
+);
 
 CREATE POLICY "Allow public read access to mediums" ON public.mediums FOR SELECT USING (true);
-CREATE POLICY "Allow admin write access to mediums" ON public.mediums FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow admin write access to mediums" ON public.mediums FOR ALL USING (
+    auth.role() = 'authenticated' AND
+    EXISTS (SELECT 1 FROM public.admin_users WHERE user_id = auth.uid())
+);
 
 -- Alter student_profiles to include new enrollment data
 ALTER TABLE public.student_profiles
@@ -43,6 +52,9 @@ ADD COLUMN IF NOT EXISTS medium_id uuid references public.mediums(id),
 ADD COLUMN IF NOT EXISTS course_program text,
 ADD COLUMN IF NOT EXISTS mobile_number text,
 ADD COLUMN IF NOT EXISTS district text;
+
+-- Create sequence if it does not exist
+CREATE SEQUENCE IF NOT EXISTS public.student_id_seq START WITH 1;
 
 -- Replace the handle_new_user function to map user_meta_data into student_profiles
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -76,9 +88,9 @@ BEGIN
         new.raw_user_meta_data->>'full_name',
         new_student_id,
         false,
-        (new.raw_user_meta_data->>'institution_id')::uuid,
-        (new.raw_user_meta_data->>'batch_id')::uuid,
-        (new.raw_user_meta_data->>'medium_id')::uuid,
+        NULLIF(new.raw_user_meta_data->>'institution_id', '')::uuid,
+        NULLIF(new.raw_user_meta_data->>'batch_id', '')::uuid,
+        NULLIF(new.raw_user_meta_data->>'medium_id', '')::uuid,
         new.raw_user_meta_data->>'course_program',
         new.raw_user_meta_data->>'mobile_number',
         new.raw_user_meta_data->>'district'

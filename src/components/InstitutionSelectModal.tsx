@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { InspireLogo } from './InspireLogo';
 import { ArrowLeft, ArrowRight, Globe, Building2, MapPin, Sparkles } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export interface Institution {
   id: string;
@@ -61,6 +62,41 @@ export const InstitutionSelectModal: React.FC<InstitutionSelectModalProps> = ({
   onClose,
   onSelectInstitute
 }) => {
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInstitutions = async () => {
+      const { data } = await supabase.from('institutions').select('*').order('created_at', { ascending: true });
+      if (data) {
+        // Map database records to the expected Institution interface
+        const mappedInsts: Institution[] = data.map((d: any, index: number) => {
+          const isOnline = d.name.toLowerCase().includes('online');
+          return {
+            id: d.id,
+            name: d.name,
+            location: d.location || '',
+            tag: isOnline ? 'ONLINE NETWORK' : `${d.location?.split(' ')[0] || 'LOCAL'} CENTER`.toUpperCase(),
+            description: isOnline
+              ? 'Accessible from anywhere through Inspire Education LMS — study from home.'
+              : 'Strong physical class presence with structured guidance.',
+            isDefault: index === 0,
+            badge: index === 0 ? 'Default' : undefined,
+            color: isOnline
+              ? 'from-emerald-950 via-teal-950 to-slate-900 border-emerald-500/50'
+              : 'bg-white border-slate-200 hover:border-blue-400'
+          };
+        });
+        setInstitutions(mappedInsts.length > 0 ? mappedInsts : institutionsList);
+      } else {
+        setInstitutions(institutionsList);
+      }
+      setLoading(false);
+    };
+
+    fetchInstitutions();
+  }, []);
+
   if (!isOpen) return null;
 
   return (
@@ -95,8 +131,9 @@ export const InstitutionSelectModal: React.FC<InstitutionSelectModalProps> = ({
 
         {/* 2x2 Institutions Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left">
-          {institutionsList.map((inst) => {
-            const isOnline = inst.id === 'online';
+          {loading && <div className="col-span-2 text-center text-slate-500 py-8">Loading institutions...</div>}
+          {!loading && institutions.map((inst) => {
+            const isOnline = inst.name.toLowerCase().includes('online');
             return (
               <div
                 key={inst.id}

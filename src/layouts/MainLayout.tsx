@@ -100,7 +100,7 @@ const MainLayout: React.FC = () => {
       />
 
       <main className="flex-1 w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 md:pt-6 relative z-10">
-        <Outlet />
+        <Outlet context={{ openSignup: () => setInstitutionSelectOpen(true) }} />
       </main>
 
       <footer className="w-full border-t border-slate-200/70 bg-white/60 backdrop-blur-xl mt-12 py-10 px-4 sm:px-6 lg:px-8 text-xs text-slate-500 relative z-10">
