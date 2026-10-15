@@ -161,7 +161,6 @@ const DashboardWrapper: React.FC = () => {
           }
 
         } catch (err: any) {
-
           console.error(err);
         }
     };
