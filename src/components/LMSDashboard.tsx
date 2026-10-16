@@ -40,17 +40,7 @@ interface LMSDashboardProps {
   overrideVideoModules?: any[];
 }
 
-type LMSSidebarItem =
-  | 'my-lessons'
-  | 'al-2028'
-  | 'al-2027'
-  | 'al-2026'
-  | 'al-video-modules'
-  | 'git'
-  | 'ol-courses'
-  | 'paper-class'
-  | 'tutes'
-  | 'past-papers';
+type LMSSidebarItem = string;
 
 interface MonthlyVideoItem {
   id: string;
@@ -319,11 +309,15 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
     );
   };
 
+  const dynamicCourseLinks = monthlyModules.map(m => ({
+    id: `course-${m.id}`,
+    label: m.title,
+    icon: BookOpen
+  }));
+
   const sidebarPrimaryLinks: { id: LMSSidebarItem; label: string; icon: React.FC<{ className?: string }> }[] = [
     { id: 'my-lessons', label: 'My Lessons', icon: Play },
-    { id: 'al-2028', label: 'A/L 2028 Batch', icon: BookOpen },
-    { id: 'al-2027', label: 'A/L 2027 Batch', icon: BookOpen },
-    { id: 'al-2026', label: 'A/L 2026 Sprint', icon: BookOpen },
+    ...dynamicCourseLinks
   ];
 
   const sidebarResourceLinks: { id: LMSSidebarItem; label: string; icon: React.FC<{ className?: string }> }[] = [
@@ -336,7 +330,11 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
   ];
 
   // When a student selects a specific video inside a monthly batch
-  const handleLaunchMonthlyVideo = (item: MonthlyVideoItem) => {
+  const handleLaunchMonthlyVideo = (item: MonthlyVideoItem | any) => {
+    if (item.real_course_id || item.real_session_id) {
+       onSelectVideo(item);
+       return;
+    }
     const convertedVideo: VideoModule = {
       id: item.id,
       title: item.title,
@@ -353,8 +351,12 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
     onSelectVideo(convertedVideo);
   };
 
-  const selectedMonthModule = monthlyModules.find(m => m.id === selectedMonthId);
-  const selectedMonthVideos = selectedMonthId ? (monthlyVideosMap[selectedMonthId] || monthlyVideosMap['mod-2027-sep']) : [];
+  const currentViewId = activeSidebar.startsWith('course-') ? activeSidebar.replace('course-', '') : selectedMonthId;
+  const selectedMonthModule = monthlyModules.find(m => m.id === currentViewId);
+
+  const selectedMonthVideos = currentViewId
+    ? (overrideVideoModules?.filter((v: any) => v.real_course_id === currentViewId.replace('real-', '')) || monthlyVideosMap[currentViewId] || monthlyVideosMap['mod-2027-sep'] || [])
+    : [];
 
 
   // Filter lessons for my-lessons based on sidebar search and selected topic
@@ -640,12 +642,12 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
               {/* Breadcrumb Trail */}
               <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-                <span className="hover:text-blue-600 cursor-pointer font-semibold" onClick={() => setSelectedMonthId(null)}>Inspire LMS</span>
+                <span className="hover:text-blue-600 cursor-pointer font-semibold" onClick={() => { setActiveSidebar('my-lessons'); setSelectedMonthId(null); }}>Inspire LMS</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
                 <span className="capitalize font-bold text-slate-800">
-                  {activeSidebar.replace(/-/g, ' ')}
+                  {activeSidebar.startsWith('course-') ? sidebarPrimaryLinks.find(link => link.id === activeSidebar)?.label : activeSidebar.replace(/-/g, ' ')}
                 </span>
-                {selectedMonthModule && (
+                {selectedMonthModule && !activeSidebar.startsWith('course-') && (
                   <>
                     <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
                     <span className="text-blue-600 font-extrabold truncate">
@@ -880,9 +882,9 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
           {/* ─────────────────────────────────────────────────────────────
               VIEW 2: A/L 2027 / 2028 / 2026 BATCH MODULES
              ───────────────────────────────────────────────────────────── */}
-          {(activeSidebar === 'al-2027' || activeSidebar === 'al-2028' || activeSidebar === 'al-2026') && (
+          {activeSidebar.startsWith('course-') && (
             <div>
-              {!selectedMonthId ? (
+              {!currentViewId ? (
                 /* ── MONTHS LIST FOR THE BATCH ── */
                 <div className="space-y-6">
 
