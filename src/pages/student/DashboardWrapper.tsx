@@ -18,12 +18,7 @@ const DashboardWrapper: React.FC = () => {
 
 
     useEffect(() => {
-        if (authUser) {
-            fetchCourses();
-        }
-    }, [authUser]);
-
-    const fetchCourses = async () => {
+        const fetchCourses = async () => {
         try {
           const { data: allCourses, error: coursesError } = await supabase
             .from('courses')
@@ -150,7 +145,11 @@ const DashboardWrapper: React.FC = () => {
         } catch (err: any) {
           console.error(err);
         }
-    };
+        };
+        if (authUser) {
+            fetchCourses();
+        }
+    }, [authUser]);
 
     if (!authUser) {
         return null;
