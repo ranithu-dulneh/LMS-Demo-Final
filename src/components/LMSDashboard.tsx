@@ -37,6 +37,7 @@ interface LMSDashboardProps {
   onAddToCart: (material: StudyMaterial) => void;
   onNavigate: (tab: any) => void;
   overrideCourses?: any[];
+  overrideVideoModules?: any[];
 }
 
 type LMSSidebarItem =
@@ -70,7 +71,8 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
   onSelectPaper,
   onAddToCart,
   onNavigate,
-  overrideCourses
+  overrideCourses,
+  overrideVideoModules
 }) => {
   const [activeSidebar, setActiveSidebar] = useState<LMSSidebarItem>('my-lessons');
   const [sidebarSearch, setSidebarSearch] = useState<string>('');
@@ -354,9 +356,12 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
   const selectedMonthModule = monthlyModules.find(m => m.id === selectedMonthId);
   const selectedMonthVideos = selectedMonthId ? (monthlyVideosMap[selectedMonthId] || monthlyVideosMap['mod-2027-sep']) : [];
 
+
   // Filter lessons for my-lessons based on sidebar search and selected topic
   const filteredVideoLessons = useMemo(() => {
-    return videoModulesData.filter((item) => {
+    const sourceData = overrideVideoModules || [];
+    return sourceData.filter((item: any) => {
+
       const matchesSearch =
         item.title.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
         item.topic.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
@@ -368,7 +373,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
       return matchesSearch && matchesTopic;
     });
-  }, [sidebarSearch, selectedTopicFilter]);
+  }, [sidebarSearch, selectedTopicFilter, overrideVideoModules]);
 
   // Download simulator for past papers inside LMS
   const handleDownloadPaper = (paper: PastPaper) => {
@@ -759,7 +764,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
               {/* Studio-Grade Video Lessons Grid (High-definition presentation) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {filteredVideoLessons.map((item, idx) => {
+                {filteredVideoLessons.map((item: any, idx: number) => {
                   const gradientPalette = [
                     'from-blue-900 via-slate-900 to-indigo-950',
                     'from-slate-950 via-blue-950 to-teal-950',

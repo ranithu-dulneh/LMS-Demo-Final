@@ -12,7 +12,10 @@ const DashboardWrapper: React.FC = () => {
     // We will mimic the LMSDashboard's internal behavior but replace or combine its mock courses
     // with actual ones fetched from the database, similar to original Dashboard.tsx.
 
+
     const [realCourses, setRealCourses] = useState<any[]>([]);
+    const [realUncompletedSessions, setRealUncompletedSessions] = useState<any[]>([]);
+
 
     useEffect(() => {
         if (authUser) {
@@ -35,7 +38,7 @@ const DashboardWrapper: React.FC = () => {
              const { data: enrollments, error: enrollError } = await supabase
                .from('enrollments')
                .select('course_id')
-               .eq('user_id', authUser.id);
+               .eq('user_id', authUser?.id);
 
              if (!enrollError && enrollments) {
                myCourseIds = enrollments.map(e => e.course_id);
@@ -69,7 +72,7 @@ const DashboardWrapper: React.FC = () => {
                 const { data: progressData } = await supabase
                    .from('student_progress')
                    .select('course_id')
-                   .eq('user_id', authUser.id)
+                   .eq('user_id', authUser?.id)
                    .in('course_id', courseIds);
 
                 if (progressData) {
@@ -79,10 +82,11 @@ const DashboardWrapper: React.FC = () => {
                 }
              }
 
+
              mappedData = accessibleCourses.map((c: any) => {
                const totalSessions = courseSessionTotals[c.id] || 0;
                const completedSessions = completedCounts[c.id] || 0;
-               const progressPercentage = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+
 
                return {
                  id: "real-" + c.id.toString(),
@@ -97,6 +101,49 @@ const DashboardWrapper: React.FC = () => {
                  tuteCount: 0
                };
              });
+
+             // Fetch full session details for the courses the user has access to
+             if (courseIds.length > 0) {
+               const { data: fullSessionsData, error: fullSessionsError } = await supabase
+                  .from('sessions')
+                  .select('*, lessons!inner(course_id, title)')
+                  .in('lessons.course_id', courseIds)
+                  .order('created_at', { ascending: false });
+
+               if (!fullSessionsError && fullSessionsData) {
+                  // Filter out completed sessions
+                  const { data: userProgress } = await supabase
+                     .from('student_progress')
+                     .select('session_id')
+                     .eq('user_id', authUser?.id);
+
+                  const completedSessionIds = userProgress ? userProgress.map(p => p.session_id) : [];
+
+                  const uncompletedSessions = fullSessionsData.filter(s => !completedSessionIds.includes(s.id));
+
+                  const mappedSessions = uncompletedSessions.map(s => {
+                    return {
+                      id: "session-" + s.id.toString(),
+                      real_session_id: s.id.toString(),
+                      real_lesson_id: s.lesson_id.toString(),
+                      real_course_id: s.lessons.course_id.toString(),
+                      title: s.title || 'Untitled Session',
+                      subtitle: s.lessons?.title || 'Course Session',
+                      description: s.description || 'Watch the recording for this session.',
+                      duration: s.duration_minutes ? `${s.duration_minutes}m` : '1h 30m',
+                      date: new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                      month: new Date(s.created_at).toLocaleString('default', { month: 'long' }),
+                      topic: s.lessons?.title || 'General',
+                      thumbnailGradient: 'from-blue-600/30 to-indigo-600/20',
+                      chapters: [],
+                      notesSummary: [],
+                      youtube_link: s.youtube_link
+                    };
+                  });
+                  setRealUncompletedSessions(mappedSessions);
+               }
+             }
+
           }
 
           setRealCourses(mappedData);
@@ -110,21 +157,27 @@ const DashboardWrapper: React.FC = () => {
     }
 
     const currentUser: CurrentUser = {
-        id: authUser.id,
-        name: authUser.user_metadata?.full_name || 'Student',
-        indexNumber: authUser.user_metadata?.student_id || 'ID-TBD',
+        id: authUser?.id || "",
+        name: authUser?.user_metadata?.full_name || 'Student',
+        indexNumber: authUser?.user_metadata?.student_id || 'ID-TBD',
         avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop',
         role: 'Student',
         batch: '2024',
         overallProgress: 0,
-        email: authUser.email || '',
+        email: authUser?.email || '',
         phone: ''
     };
 
     return (
         <LMSDashboard
             currentUser={currentUser}
-            onSelectVideo={() => {}}
+
+            onSelectVideo={(video: any) => {
+              if (video.real_course_id) {
+                navigate(`/student/course/${video.real_course_id}?session=${video.real_session_id}`);
+              }
+            }}
+
             onSelectPaper={() => {}}
             onAddToCart={() => {}}
             onNavigate={(tab: string) => {
@@ -137,7 +190,10 @@ const DashboardWrapper: React.FC = () => {
                 else if (tab === 'store') navigate('/store');
                 else if (tab === 'results') navigate('/results');
             }}
+
             overrideCourses={realCourses}
+            overrideVideoModules={realUncompletedSessions}
+
         />
     )
 }
